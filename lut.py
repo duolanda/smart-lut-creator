@@ -2,31 +2,17 @@ import math
 import numpy as np
 
 class Lut:
-    def __init__(self, size, image_size):
+    def __init__(self, size):
         self.size = size
-        self.image_size = image_size
-        self.swatch_count = pow(self.size, 3)
-        self.columns = math.ceil(math.sqrt(self.swatch_count))
-        self.swatch_size = self.image_size / self.columns
-
-    def cell_center(self, i, size=1):
-        """
-        Compute x/y center position for a 3D lattice node by index
-        """
-        row, column = self.grid_coords(i)
-        x = int(column * self.swatch_size + self.swatch_size / 2)
-        y = int(row * self.swatch_size + self.swatch_size / 2)
-        if size == 1:
-            return (x, y)
-        else:
-            hs = size / 2
-            return (x-hs, y-hs, x+hs, y+hs)
+        self.swatch_count = size ** 3
+        self.image_size = math.ceil(self.swatch_count**0.5)
+        self.columns = self.image_size
 
     def cell_bounds(self, i):
         row, column = self.grid_coords(i)
-        x = column * self.swatch_size
-        y = row * self.swatch_size
-        return (x, y, x + self.swatch_size, y + self.swatch_size)
+        x = column
+        y = row
+        return (x, y, x + 1, y + 1)
 
     def grid_coords(self, i):
         row = math.floor(i / self.columns)

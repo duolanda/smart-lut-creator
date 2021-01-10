@@ -3,6 +3,10 @@ from PIL import Image, ImageDraw
 from lut import Lut
 import math
 
+'''
+faymontage/lut-maker: Generate 3D color LUTs in Adobe Cube and Pseudo-3D texture format
+https://github.com/faymontage/lut-maker
+'''
 
 META_FILENAME = '{}_metadata.json'
 HALD_FILENAME = 'HALD_{}.png'
@@ -10,16 +14,14 @@ LUT_JSON_FILENAME = '{}.json'
 LUT_CUBE_FILENAME = '{}.cube'
 LUT_PNG_FILENAME = '{}.png'
 
-def generate_HALD(lut_size, output_path,image_size = None, name = None):
+def generate_HALD(lut_size, output_path, name = None):
     """
     生成色彩图
     """
-    if image_size == None:
-        image_size =  math.ceil((lut_size ** 3) ** 0.5)
     if name == None:
         name = str(lut_size)
 
-    lut = Lut(lut_size, image_size)
+    lut = Lut(lut_size)
     colors = lut.generate_colors()
     image = Image.new('RGB', (lut.image_size, lut.image_size), (0, 0, 0))
     draw = ImageDraw.Draw(image)
@@ -34,7 +36,7 @@ def generate_HALD(lut_size, output_path,image_size = None, name = None):
 
 
 if __name__ == '__main__':
-    lut_size = 64
+    lut_size = 256
     data_dir = ''
     # image_size = 512
     # name = 'lut'
