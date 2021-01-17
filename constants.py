@@ -1,0 +1,4 @@
+HALD_FILENAME = 'HALD_{}.png'
+LUT_JSON_FILENAME = '{}.json'
+LUT_CUBE_FILENAME = '{}.cube'
+LUT_PNG_FILENAME = '{}.png'

@@ -3,14 +3,14 @@ from PIL import Image, ImageDraw
 from lut import Lut
 import math
 
+from constants import HALD_FILENAME
+
 '''
 faymontage/lut-maker: Generate 3D color LUTs in Adobe Cube and Pseudo-3D texture format
 https://github.com/faymontage/lut-maker
 '''
 
-META_FILENAME = '{}_metadata.json'
 HALD_FILENAME = 'HALD_{}.png'
-LUT_JSON_FILENAME = '{}.json'
 LUT_CUBE_FILENAME = '{}.cube'
 LUT_PNG_FILENAME = '{}.png'
 
