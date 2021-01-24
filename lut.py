@@ -57,6 +57,24 @@ def Indices(cubeSize, maxVal):
 def RemapIntTo01(val, maxVal):
 	return (float(val)/float(maxVal))
 
+def Remap01ToInt(val, maxVal):
+	return int(iround(float(val) * float(maxVal)))
+
+def iround(num):
+	if (num > 0):
+		return int(num+.5)
+	else:
+		return int(num-.5)
+
+def Clamp(value, min, max):
+	if min > max:
+		raise NameError("Invalid Clamp Values")
+	if value < min:
+		return float(min)
+	if value > max:
+		return float(max)
+	return value
+
 class Color:
 	def __init__(self, r, g, b):
 		self.r = r
@@ -66,6 +84,9 @@ class Color:
 	def __str__(self):
 		return "(" + str(self.r) + ", " + str(self.g) + ", " + str(self.b) + ")"
 	
+	def Clamped01(self):
+		return Color(Clamp(float(self.r), 0, 1), Clamp(float(self.g), 0, 1), Clamp(float(self.b), 0, 1))
+
 	@staticmethod
 	def FromRGBInteger(r, g, b, bitdepth):
 		"""
@@ -74,12 +95,36 @@ class Color:
 		maxBits = 2**bitdepth - 1
 		return Color(RemapIntTo01(r, maxBits), RemapIntTo01(g, maxBits), RemapIntTo01(b, maxBits))
 
+	def FormattedAsFloat(self, format = '{:1.6f}'):
+		return format.format(self.r) + " " + format.format(self.g) + " " + format.format(self.b)
+	
+	def FormattedAsInteger(self, maxVal):
+		rjustValue = len(str(maxVal)) + 1
+		return str(Remap01ToInt(self.r, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.g, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.b, maxVal)).rjust(rjustValue)
+
 class LUT:
 	def __init__(self, lattice, name = "Untitled LUT"):
 		self.lattice = lattice
 		self.cubeSize = self.lattice.shape[0]
 		self.name = str(name)
 	
+	def _LatticeTo3DLString(self, bitdepth):
+			"""
+			Used for internal creating of 3DL files.
+			"""
+			string = ""
+			cubeSize = self.cubeSize
+			for currentCubeIndex in range(0, cubeSize**3):
+				redIndex = currentCubeIndex // (cubeSize*cubeSize)
+				greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
+				blueIndex = currentCubeIndex % cubeSize
+
+				latticePointColor = self.lattice[redIndex, greenIndex, blueIndex].Clamped01()
+				
+				string += latticePointColor.FormattedAsInteger(2**bitdepth-1) + "\n"
+			
+			return string
+
 	@staticmethod
 	def FromIdentity(cubeSize):
 		"""
@@ -123,11 +168,11 @@ class LUT:
 				greenValue = line.split()[1]
 				blueValue = line.split()[2]
 
-				redIndex = currentCubeIndex // (cubeSize*cubeSize)
+				redIndex = currentCubeIndex // (cubeSize*cubeSize) #r和b与cube文件是反着的
 				greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
 				blueIndex = currentCubeIndex % cubeSize
 
-				lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth)
+				lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth) 
 				currentCubeIndex += 1
 
 		return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
@@ -140,14 +185,15 @@ class LUT:
 
 		meshLineIndex = 0
 		cubeSize = -1
-		lineSkip = 0
 
 		for line in lutFileLines:
 			if "#" in line or line == "\n":
 				meshLineIndex += 1
+			else:
+				break #不加break是不合理的， 不然只要整个文件后面有空行或注释都会+1
 	
-		outputDepth = int(math.log(int(lutFileLines[meshLineIndex].split()[-1])+1,2))
-		cubeSize = len(lutFileLines[meshLineIndex].split())
+		outputDepth = int(math.log(int(lutFileLines[meshLineIndex].split()[-1])+1,2)) #根据mesh行最后一个数算深度，如255得出的就是8
+		cubeSize = len(lutFileLines[meshLineIndex].split()) #meshline 有几个数大小就是多少
 		
 	
 		if cubeSize == -1:
@@ -165,11 +211,11 @@ class LUT:
 				greenValue = line.split()[1]
 				blueValue = line.split()[2]
 
-				redIndex = currentCubeIndex // (cubeSize*cubeSize)
+				redIndex = currentCubeIndex // (cubeSize*cubeSize) #注意这里r和b与cube文件是反着的
 				greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
 				blueIndex = currentCubeIndex % cubeSize
 
-				lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth)
+				lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth) #将整数换算到浮点
 				currentCubeIndex += 1
 		return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
 
@@ -183,7 +229,7 @@ class LUT:
 		cubeSize = -1
 
 		for line in cubeFileLines:
-			if "LUT_3D_SIZE" in line:
+			if "LUT_3D_SIZE" in line and line[0] != '#': #加一个注释判断
 				cubeSize = int(line.split()[1])
 				break
 			cubeSizeLineIndex += 1
@@ -194,7 +240,7 @@ class LUT:
 		currentCubeIndex = 0
 		for line in cubeFileLines[cubeSizeLineIndex+1:]:
 			if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
-				#valid cube line
+				#lut 数据行
 				redValue = float(line.split()[0])
 				greenValue = float(line.split()[1])
 				blueValue = float(line.split()[2])
@@ -208,6 +254,55 @@ class LUT:
 
 		return LUT(lattice, name = os.path.splitext(os.path.basename(cubeFilePath))[0])
 
+	def ToLustre3DLFile(self, fileOutPath, bitdepth = 12):
+		cubeSize = self.cubeSize
+		inputDepth = math.log(cubeSize-1, 2)
+
+		if int(inputDepth) != inputDepth:
+			raise NameError("Invalid cube size for 3DL. Cube size must be 2^x + 1")
+
+		lutFile = open(fileOutPath, 'w')
+
+		lutFile.write("3DMESH\n")
+		lutFile.write("Mesh " + str(int(inputDepth)) + " " + str(bitdepth) + "\n")
+		lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**10 - 1)]) + "\n")
+		
+		lutFile.write(self._LatticeTo3DLString(bitdepth))
+
+		lutFile.write("\n#Tokens required by applications - do not edit\nLUT8\ngamma 1.0")
+
+		lutFile.close()
+
+	def ToNuke3DLFile(self, fileOutPath, bitdepth = 16):
+		cubeSize = self.cubeSize
+
+		lutFile = open(fileOutPath, 'w')
+
+		lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**bitdepth - 1)]) + "\n")
+
+		lutFile.write(self._LatticeTo3DLString(bitdepth))
+
+		lutFile.close()
+	
+	def ToCubeFile(self, cubeFileOutPath):
+		cubeSize = self.cubeSize
+		cubeFile = open(cubeFileOutPath, 'w')
+		cubeFile.write("LUT_3D_SIZE " + str(cubeSize) + "\n")
+		
+		for currentCubeIndex in range(0, cubeSize**3):
+			redIndex = currentCubeIndex % cubeSize
+			greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
+			blueIndex = currentCubeIndex // (cubeSize*cubeSize)
+
+			latticePointColor = self.lattice[redIndex, greenIndex, blueIndex].Clamped01()
+			
+			cubeFile.write( latticePointColor.FormattedAsFloat() )
+			
+			if(currentCubeIndex != cubeSize**3 - 1):
+				cubeFile.write("\n")
+
+		cubeFile.close()
+
 	def ColorAtLatticePoint(self, redPoint, greenPoint, bluePoint):
 		"""
 		Returns a color at a specified lattice point - this value is pulled from the actual LUT file and is not interpolated.
@@ -215,7 +310,6 @@ class LUT:
 		cubeSize = self.cubeSize
 		if redPoint > cubeSize-1 or greenPoint > cubeSize-1 or bluePoint > cubeSize-1:
 			raise NameError("Point Out of Bounds: (" + str(redPoint) + ", " + str(greenPoint) + ", " + str(bluePoint) + ")")
-		#暴力一些，直接加 int
 		redPoint = int(redPoint)
 		greenPoint = int(greenPoint)
 		bluePoint = int(bluePoint)
