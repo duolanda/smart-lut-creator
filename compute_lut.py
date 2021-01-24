@@ -3,7 +3,7 @@ import json
 import math
 from PIL import Image
 
-from lut import Lut
+from lut import LutM
 from constants import HALD_FILENAME, LUT_CUBE_FILENAME, LUT_JSON_FILENAME, LUT_PNG_FILENAME
 
 
@@ -17,7 +17,7 @@ def compute_lut(path, lut_size, gen_format, name=None):
     if name == None:
         name = str(lut_size)
 
-    lut = Lut(lut_size)
+    lut = LutM(lut_size)
 
     image = Image.open(os.path.join(path,HALD_FILENAME.format(name)))
     colors = []
@@ -63,7 +63,7 @@ def save_lut_cube(path, name, lut, colors):
     Save LUT data as Adobe Cube, for use in Photoshop, Premiere, etc.
     Adobe Cube Spec: http://wwwimage.adobe.com/content/dam/Adobe/en/products/speedgrade/cc/pdfs/cube-lut-specification-1.0.pdf
     """
-    cube = 'LUT_3D_SIZE {}\n'.format(lut.size) + '\n'.join(map(cube_row, colors))
+    cube = 'LUT_3D_SIZE {}\n'.format(lut.size) + '\n'.join(map(cube_row, colors)) 
     with open(os.path.join(path,LUT_CUBE_FILENAME.format(name)),'w') as f:
         f.write(cube)
 

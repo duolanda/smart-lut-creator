@@ -1,6 +1,6 @@
 import os
 from PIL import Image, ImageDraw
-from lut import Lut
+from lut import LutM
 import math
 
 from constants import HALD_FILENAME
@@ -21,7 +21,7 @@ def generate_HALD(lut_size, output_path, name = None):
     if name == None:
         name = str(lut_size)
 
-    lut = Lut(lut_size)
+    lut = LutM(lut_size)
     colors = lut.generate_colors()
     image = Image.new('RGB', (lut.image_size, lut.image_size), (0, 0, 0))
     draw = ImageDraw.Draw(image)
@@ -36,7 +36,7 @@ def generate_HALD(lut_size, output_path, name = None):
 
 
 if __name__ == '__main__':
-    lut_size = 256
+    lut_size = 13
     data_dir = ''
     # image_size = 512
     # name = 'lut'
