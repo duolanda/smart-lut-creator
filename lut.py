@@ -99,7 +99,10 @@ class Color:
 		return format.format(self.r) + " " + format.format(self.g) + " " + format.format(self.b)
 	
 	def FormattedAsInteger(self, maxVal):
-		rjustValue = len(str(maxVal)) + 1
+		#rjust 用于数字右对齐
+		#对其前：'0'
+		#对齐后：'     0'
+		rjustValue = len(str(maxVal)) + 1 
 		return str(Remap01ToInt(self.r, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.g, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.b, maxVal)).rjust(rjustValue)
 
 class LUT:
