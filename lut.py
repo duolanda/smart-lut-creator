@@ -95,7 +95,7 @@ class Color:
 		maxBits = 2**bitdepth - 1
 		return Color(RemapIntTo01(r, maxBits), RemapIntTo01(g, maxBits), RemapIntTo01(b, maxBits))
 
-	def FormattedAsFloat(self, format = '{:1.6f}'):
+	def FormattedAsFloat(self, format = '{:.18f}'):
 		return format.format(self.r) + " " + format.format(self.g) + " " + format.format(self.b)
 	
 	def FormattedAsInteger(self, maxVal):
@@ -140,6 +140,19 @@ class LUT:
 				for b in range(cubeSize):
 					identityLattice[r, g, b] = Color(indices01[r], indices01[g], indices01[b])
 		return LUT(identityLattice, name = "Identity"+str(cubeSize))	
+
+	@staticmethod
+	def FromCompute(cubeSize, HALD_data):
+		'''
+		与 HALD 模块的生成 lut 部分对接
+		'''
+		HALDLattice = EmptyLatticeOfSize(cubeSize)
+		for b in range(cubeSize):
+			for g in range(cubeSize):
+				for r in range(cubeSize):
+					HALD_lattice = HALD_data[b*cubeSize*cubeSize+g*cubeSize+r]
+					HALDLattice[r, g, b] = Color(HALD_lattice[0]/255, HALD_lattice[1]/255, HALD_lattice[2]/255)
+		return LUT(HALDLattice, name = "HALD"+str(cubeSize))	
 
 	@staticmethod
 	def FromLustre3DLFile(lutFilePath):

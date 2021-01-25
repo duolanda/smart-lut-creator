@@ -36,7 +36,7 @@ def generate_HALD(lut_size, output_path, name = None):
 
 
 if __name__ == '__main__':
-    lut_size = 13
+    lut_size = 36
     data_dir = ''
     # image_size = 512
     # name = 'lut'
