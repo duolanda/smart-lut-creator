@@ -236,6 +236,16 @@ class LUT:
 				cubeSize = int(line.split()[1])
 				break
 			cubeSizeLineIndex += 1
+
+		#找 input range 的，但目前只是找到这两个数，不做进一步处理
+		for i in range(len(cubeFileLines)):
+			line = cubeFileLines[i]
+			if 'LUT_3D_INPUT_RANGE' in line and line[0] != '#':
+				domin_min = float(line.split()[1])
+				domin_max = float(line.split()[2])
+				cubeSizeLineIndex = i
+				break
+
 		if cubeSize == -1:
 			raise NameError("Invalid .cube file.")
 
@@ -268,7 +278,7 @@ class LUT:
 
 		lutFile.write("3DMESH\n")
 		lutFile.write("Mesh " + str(int(inputDepth)) + " " + str(bitdepth) + "\n")
-		lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**10 - 1)]) + "\n")
+		lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**10 - 1)]) + "\n")#和深度无关，这一行都是 0~1023
 		
 		lutFile.write(self._LatticeTo3DLString(bitdepth))
 
