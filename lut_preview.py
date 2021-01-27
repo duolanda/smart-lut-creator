@@ -79,3 +79,5 @@ if __name__ == '__main__':
     lut = load_cube_file('test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube')
     im = Image.open('test_img/Alexa.bmp')
     im.filter(lut).save('PILTest.bmp')
+
+    #以后要直接对接 IO
