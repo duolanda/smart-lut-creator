@@ -1,36 +1,35 @@
 import colour
-import cv2
 import numpy as np
-from skimage import io
+import colorio
 from skimage.color import rgb2xyz, xyz2rgb, rgb2lab
 
+def vector_dot(m, v): 
+    '''
+    m 是变换矩阵，v 是图像矩阵（只有一个像素或整张图都可以）
+    非常神奇，经过实际验证，其效果与逐像素去和变换矩阵相乘完全相同，速度还飞快
+    '''
+    return np.einsum('...ij,...j->...i', m, v)
 
-img_in = colour.read_image('test_img/smpte_digital_leader_4k_24fps_2d_ar185_srgb.tif')
+srgb_trans = colorio.SrgbLinear()
 
-# trans = np.asarray([0.4185, -0.1587, -0.0828, -0.0912, 0.2524, 0.0157, 0.0009, -0.0025, 0.1786]).reshape(3,3)
+
+img_in = colour.read_image('test_img/smpte_digital_leader_4k_24fps_2d_ar185_xyz16.tif')
+img_in2 = colour.read_image('test_img/smpte_digital_leader_4k_24fps_2d_ar185_srgb.tif')
+
+# img_in = img_in ** (1/2.2)
 
 # for i in range(len(img_in)):
 #     if(i%100 == 0):
-#         print(i)
+#         print(i/len(img_in)*100)
 #     for j in range(len(img_in[i])):
-#         img_in[i][j] = np.dot(trans, img_in[i][j])
+#         img_in[i][j] = srgb_trans.from_xyz100(img_in[i][j])
 
-img_out = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(img_in))
-# img_out = img_in
-colour.write_image(img_out, 'output.tif')
+# img_out = xyz2rgb(img_in)
+
+# img_out = colour.XYZ_to_sRGB(img_in)
+
+img_out = rgb2lab(img_in2)
+# img_out = img_out ** 2.2
+colour.write_image(img_out, 'output2.bmp')
 
 
-
-'''
-尝试 skimage
-'''
-img = io.imread('test_img/smpte_digital_leader_4k_24fps_2d_ar185_srgb.tif')
-img_xyz = rgb2lab(img)
-io.imsave('test-2.png', img_xyz)
-
-'''
-尝试 opencv
-'''
-# img = cv2.imread('test_img/smpte_digital_leader_4k_24fps_2d_ar185_srgb.tif')
-# xyz = cv2.cvtColor(img, cv2.COLOR_RGB2XYZ)
-# cv2.imwrite('test.png', xyz)
