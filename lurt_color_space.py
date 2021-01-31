@@ -37,6 +37,34 @@ def slog3(img, to_linear):
                         img[i][j][k] = (img[i][j][k]*(171.2102946929-95)/0.01125+95)/1023
     return img
 
+def logc(img, to_linear): 
+    #取 EI = 800 时的值（曝光）
+    cut = 0.010591 
+    a = 5.555556 
+    b = 0.052272 
+    c = 0.247190 
+    d = 0.385537 
+    e = 5.367655 
+    f = 0.092809 
+
+    if to_linear:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] > e*cut+f:
+                        img[i][j][k] = (10**((img[i][j][k]-d)/c)-b)/a
+                    else:
+                        img[i][j][k] = (img[i][j][k]-f)/e
+    else:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] > cut:
+                        img[i][j][k] = c*math.log10(a*img[i][j][k]+b)+d
+                    else:
+                        img[i][j][k] = e*img[i][j][k]+f
+    return img
+
 def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0):
     '''
     支持色彩空间：srgb, xyz, lab, hsv, ycbcr
@@ -70,7 +98,7 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0):
 
     return img_out
 
-def gamut_convert(input_gamut, out_gamut, img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
+def gamut_convert(input_gamut, out_gamut, img, norm=True):
     #Sony S-Gamut/S-Gamut3
     sgamut_xy = [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]] # 这里的是小写 x,y 顺序为 RGB
     #Sony S-Gamut.Cine
@@ -86,14 +114,6 @@ def gamut_convert(input_gamut, out_gamut, img, input_gamma = 1.0, output_gamma =
     w_D55 = [95.682, 100, 92.149]
     w_D65 = [95.047, 100, 108.883]
     w_D75 = [94.972, 100, 122.638]
-
-    if input_gamma == 'slog3':
-        img = slog3(img, to_linear = True)
-        img = img**(1/2.2) ##不加这个的话总是会太黑
-    elif input_gamma == 'clog':
-        pass
-    else:
-        img = img ** input_gamma
 
     def colorpy_mat(xy, wp):
         '''
@@ -145,28 +165,55 @@ def gamut_convert(input_gamut, out_gamut, img, input_gamma = 1.0, output_gamma =
 
     elif input_gamut == out_gamut:
         pass
+
+    if norm:
+        img = img/np.max(img)
+        img[img<0] = 0
     
+    return img
+
+def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
+    #把 srgb 和 rec709 加上，就俩数的事
+    if input_gamma == 'slog3':
+        img = slog3(img, to_linear = True)
+        img = img**(1/2.2) ##不加这个的话总是会太黑
+    elif input_gamma == 'logc':
+        img = logc(img, to_linear = True)
+        img = img**(1/2.2)
+    else:
+        img = img ** input_gamma
+
 
     if output_gamma == 'slog3':
-        img = img**2.2
+        img = img**2.2 ##不加这个的话总是会太白
         img = slog3(img, to_linear = False)
-    elif output_gamma == 'clog':
-        pass
+    elif output_gamma == 'loc':
+        img = logc(img, to_linear = False)
     else:
         img = img ** (1/output_gamma)
 
-
     if clip:
         img[img>1] = 1
+        img[img<0] = 0
+
     return img
 
 
 img_in = colour.read_image('test_img/Alexa.jpg')
+# img_in = colour.read_image('test_img/s-log.tif')
+
 
 # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
+
 # img_out = gamut_convert('sgamut', 'srgb', img_in)
-# img_out = gamut_convert('srgb', 'srgb', img_in, output_gamma='slog3')
-img_out = gamut_convert('alexawg', 'srgb', img_in)
+# img_out = gamma_convert(img_out, 2.2) #完成色域转换必须调 gamma
+
+# img_out = gamma_convert(img_in, output_gamma='slog3')
+
+# img_out = gamut_convert('alexawg', 'srgb', img_in)
+# img_out = gamma_convert(img_out, 2.2)
+
+img_out = gamma_convert(img_in, input_gamma='logc')
 
 colour.write_image(img_out, 'test_img/output.png')
 
