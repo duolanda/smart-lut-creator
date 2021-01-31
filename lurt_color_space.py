@@ -64,9 +64,49 @@ class MySrgb:
     def srgb_to_xyz(self, srgb):
         return 100*np.dot(self.mat, srgb)
 
+def colorpy_mat():
+    '''
+    返回 srgb to xyz 矩阵
+    '''
+    # 很神奇，这个的 xyz 的 z 是用 1-x-y 算出来的，而且应该给 xyy 才对，但最后得出的变换矩阵却与 colorio 相差无几
+    def xyz_color (x, y, z = None):
+        '''Construct an xyz color.  If z is omitted, set it so that x+y+z = 1.0.'''
+        if z == None:
+            # choose z so that x+y+z = 1.0
+            z = 1.0 - (x + y)
+        rtn = np.array ([x, y, z])
+        return rtn
+
+    SRGB_Red   = xyz_color(0.640, 0.330)
+    SRGB_Green = xyz_color(0.300, 0.600)
+    SRGB_Blue  = xyz_color(0.150, 0.060)
+    SRGB_White = xyz_color(0.95047, 1, 1.08883)  # D65
+
+
+    phosphor_red   = SRGB_Red   
+    phosphor_green = SRGB_Green 
+    phosphor_blue  = SRGB_Blue  
+    white_point = SRGB_White 
+
+    phosphor_matrix = np.column_stack ((phosphor_red, phosphor_green, phosphor_blue))
+    # Determine intensities of each phosphor by solving:
+    #     phosphor_matrix * intensity_vector = white_point
+    intensities = np.linalg.solve (phosphor_matrix, white_point)
+    # construct xyz_from_rgb matrix from the results
+    xyz_from_rgb_matrix = np.column_stack (
+        (phosphor_red   * intensities [0],
+         phosphor_green * intensities [1],
+         phosphor_blue  * intensities [2]))
+
+    # invert to get rgb_from_xyz matrix
+    # rgb_from_xyz_matrix = np.linalg.inv (xyz_from_rgb_matrix)
+    return xyz_from_rgb_matrix
 
 trans = MySrgb()
 print(trans.xyz_to_srgb(np.array([0.95047, 1.00000, 1.08883])))
+rgb_to_xyz_mat = colorpy_mat()
+print(np.dot(np.linalg.inv(rgb_to_xyz_mat), np.array([0.95047, 1.00000, 1.08883])))
+
 
 # # img_in = colour.read_image('test_img/fruits.tif')
 # img_in = colour.read_image('test_img/output.png')
