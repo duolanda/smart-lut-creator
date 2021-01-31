@@ -68,7 +68,7 @@ def colorpy_mat():
     '''
     返回 srgb to xyz 矩阵
     '''
-    # 很神奇，这个的 xyz 的 z 是用 1-x-y 算出来的，而且应该给 xyy 才对，但最后得出的变换矩阵却与 colorio 相差无几
+    # 注意，这里的是小写 x,y,z，ColorIO 是从 xyY 转成的大写 XYZ
     def xyz_color (x, y, z = None):
         '''Construct an xyz color.  If z is omitted, set it so that x+y+z = 1.0.'''
         if z == None:
