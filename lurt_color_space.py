@@ -1,8 +1,6 @@
 import colour
 import numpy as np
-import colorio
 from skimage.color import rgb2xyz, xyz2rgb, rgb2lab, lab2rgb, rgb2hsv, rgb2ycbcr,rgb2yuv
-from skimage import data, io
 
 def vector_dot(m, v): 
     '''
@@ -11,12 +9,42 @@ def vector_dot(m, v):
     '''
     return np.einsum('...ij,...j->...i', m, v)
 
-srgb_trans = colorio.SrgbLinear()
+def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0):
+    '''
+    支持色彩空间：srgb, xyz, lab, hsv, ycbcr
+    '''
+    img = img**input_gamma
 
-img_in = colour.read_image('test_img/fruits.tif')
-# img_in = io.imread('test_img/fruits.tif')
+    if input_cs == 'srgb' and out_cs == 'xyz':
+        img_out = colour.sRGB_to_XYZ(img)
+    elif input_cs == 'xyz' and out_cs == 'srgb':
+        img_out = colour.XYZ_to_sRGB(img)
 
-# img_in = img_in ** (1/2.2)
+    elif input_cs == 'srgb' and out_cs == 'lab':
+        img_out = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(img))
+    elif input_cs == 'lab' and out_cs == 'srgb':
+        img_out = colour.XYZ_to_sRGB(colour.Lab_to_XYZ(img))
+
+    elif input_cs == 'srgb' and out_cs == 'hsv':
+        img_out = colour.RGB_to_HSV(img)
+    elif input_cs == 'hsv' and out_cs == 'srgb':
+        img_out = colour.HSV_to_RGB(img)
+
+    elif input_cs == 'srgb' and out_cs == 'ycbcr':
+        img_out = colour.RGB_to_YCbCr(img)
+    elif input_cs == 'ycbcr' and out_cs == 'srgb':
+        img_out = colour.YCbCr_to_RGB(img)
+
+    elif input_cs == 'srgb' and out_cs == 'srgb':
+        img_out = img
+
+    img_out = img_out**(1/output_gamma)
+
+    return img_out
+
+# img_in = colour.read_image('test_img/fruits.tif')
+img_in = colour.read_image('test_img/output.png')
+
 
 # for i in range(len(img_in)):
 #     if(i%100 == 0):
@@ -25,16 +53,10 @@ img_in = colour.read_image('test_img/fruits.tif')
 #         img_in[i][j] = srgb_trans.to_xyz100(img_in[i][j])
 
 
-# img_out = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(img_in))
-# img_out = colour.RGB_to_HSV(img_in)
-# img_out = colour.RGB_to_YCbCr(img_in)
 
-# img_out = rgb2xyz(img_in)
+img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
 
-# img_out = img_out ** 2.2
-# colour.write_image(img_out, 'test_img/output.png')
-
-io.imsave('test_img/output.png', img_out)
+colour.write_image(img_out, 'test_img/output2.png')
 
 
 
