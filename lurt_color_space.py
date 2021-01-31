@@ -18,6 +18,44 @@ def xyz_color (x, y, z = None):
     rtn = np.array ([x, y, z])
     return rtn
 
+def srgb(img, to_linear):
+    if to_linear:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] <=0.04045:
+                        img[i][j][k] = img[i][j][k]/12.92
+                    else:
+                        img[i][j][k] = ((img[i][j][k]+0.055)/1.055)**2.4
+    else:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] <=0.0031308:
+                        img[i][j][k] = 12.92 * img[i][j][k]
+                    else:
+                        img[i][j][k] = 1.055 * img[i][j][k]**(1/2.4)-0.055
+    return img
+
+def rec709(img, to_linear):
+    if to_linear:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] <=0.081:
+                        img[i][j][k] = img[i][j][k]/4.5
+                    else:
+                        img[i][j][k] = ((img[i][j][k]+0.099)/1.099)**(1/0.45)
+    else:
+        for i in range(len(img)):
+            for j in range(len(img[i])):
+                for k in range(3):
+                    if img[i][j][k] <0.018:
+                        img[i][j][k] = 4.5* img[i][j][k]
+                    else:
+                        img[i][j][k] = 1.099 * img[i][j][k]**(0.45)-0.099
+    return img
+
 def slog3(img, to_linear):
     if to_linear:
         for i in range(len(img)):
@@ -173,22 +211,34 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
     return img
 
 def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
-    #把 srgb 和 rec709 加上，就俩数的事
+    # 其实 srgb 和 rec709 也要做 2.2 处理
+    # 之所以会出现这个问题应该是因为导入进来的图像默认是rec709（推测），而不是linear，而所有变换公式都是针对linear的
+    if input_gamma == output_gamma:
+        return img
+
     if input_gamma == 'slog3':
         img = slog3(img, to_linear = True)
         img = img**(1/2.2) ##不加这个的话总是会太黑
     elif input_gamma == 'logc':
         img = logc(img, to_linear = True)
         img = img**(1/2.2)
+    elif input_gamma == 'srgb':
+        img = srgb(img, to_linear = True)
+    elif input_gamma == 'rec709':
+        img = rec709(img, to_linear = True)
     else:
         img = img ** input_gamma
-
 
     if output_gamma == 'slog3':
         img = img**2.2 ##不加这个的话总是会太白
         img = slog3(img, to_linear = False)
     elif output_gamma == 'loc':
+        img = img**2.2
         img = logc(img, to_linear = False)
+    elif output_gamma == 'srgb':
+        img = srgb(img, to_linear = False)
+    elif output_gamma == 'rec709':
+        img = rec709(img, to_linear = False)
     else:
         img = img ** (1/output_gamma)
 
@@ -199,7 +249,8 @@ def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
     return img
 
 
-img_in = colour.read_image('test_img/Alexa.jpg')
+img_in = colour.read_image('test_img/lena_std.tif')
+# img_in = colour.read_image('test_img/Alexa.jpg')
 # img_in = colour.read_image('test_img/s-log.tif')
 
 
@@ -213,7 +264,10 @@ img_in = colour.read_image('test_img/Alexa.jpg')
 # img_out = gamut_convert('alexawg', 'srgb', img_in)
 # img_out = gamma_convert(img_out, 2.2)
 
-img_out = gamma_convert(img_in, input_gamma='logc')
+# img_out = gamma_convert(img_in, input_gamma='logc')
+
+img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
+
 
 colour.write_image(img_out, 'test_img/output.png')
 
