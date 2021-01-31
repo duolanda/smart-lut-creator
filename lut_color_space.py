@@ -103,7 +103,7 @@ def logc(img, to_linear):
                         img[i][j][k] = e*img[i][j][k]+f
     return img
 
-def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0):
+def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
     '''
     支持色彩空间：srgb, xyz, lab, hsv, ycbcr
     '''
@@ -133,6 +133,10 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0):
         img_out = img
 
     img_out = img_out**(1/output_gamma)
+
+    if clip:
+        img_out[img_out>1] = 1
+        img_out[img_out<0] = 0
 
     return img_out
 
@@ -210,18 +214,15 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
     
     return img
 
-def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
-    # 其实 srgb 和 rec709 也要做 2.2 处理
-    # 之所以会出现这个问题应该是因为导入进来的图像默认是rec709（推测），而不是linear，而所有变换公式都是针对linear的
+def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
+    # 导入进来的图像默认根据推测是rec709，而不是linear，而所有变换公式都是针对linear的，所以如果不输入gamma就给2.2，但需要注意，rec709并非就是2.2，这里只是为了节省时间做的近似，肉眼不怎么看得出来差异
     if input_gamma == output_gamma:
         return img
 
     if input_gamma == 'slog3':
         img = slog3(img, to_linear = True)
-        img = img**(1/2.2) ##不加这个的话总是会太黑
     elif input_gamma == 'logc':
         img = logc(img, to_linear = True)
-        img = img**(1/2.2)
     elif input_gamma == 'srgb':
         img = srgb(img, to_linear = True)
     elif input_gamma == 'rec709':
@@ -230,10 +231,8 @@ def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
         img = img ** input_gamma
 
     if output_gamma == 'slog3':
-        img = img**2.2 ##不加这个的话总是会太白
         img = slog3(img, to_linear = False)
-    elif output_gamma == 'loc':
-        img = img**2.2
+    elif output_gamma == 'logc':
         img = logc(img, to_linear = False)
     elif output_gamma == 'srgb':
         img = srgb(img, to_linear = False)
@@ -249,27 +248,29 @@ def gamma_convert(img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
     return img
 
 
-img_in = colour.read_image('test_img/lena_std.tif')
-# img_in = colour.read_image('test_img/Alexa.jpg')
-# img_in = colour.read_image('test_img/s-log.tif')
+if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
+    # img_in = colour.read_image('test_img/lena_std.tif')
+    # img_in = colour.read_image('test_img/Alexa.jpg')
+    # img_in = colour.read_image('test_img/s-log.tif')
+    img_in = colour.read_image('HALD_36.png')
 
 
-# img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
+    # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
 
-# img_out = gamut_convert('sgamut', 'srgb', img_in)
-# img_out = gamma_convert(img_out, 2.2) #完成色域转换必须调 gamma
+    img_out = gamut_convert('sgamut', 'srgb', img_in)
+    img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
 
-# img_out = gamma_convert(img_in, output_gamma='slog3')
+    # img_out = gamma_convert(img_in, output_gamma='slog3')
 
-# img_out = gamut_convert('alexawg', 'srgb', img_in)
-# img_out = gamma_convert(img_out, 2.2)
+    # img_out = gamut_convert('alexawg', 'srgb', img_in)
+    # img_out = gamma_convert(img_out, 2.2, 1)
 
-# img_out = gamma_convert(img_in, input_gamma='logc')
+    # img_out = gamma_convert(img_in, input_gamma='logc')
 
-img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
+    # img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
 
 
-colour.write_image(img_out, 'test_img/output.png')
+    colour.write_image(img_out, 'test_img/output.png')
 
 
 

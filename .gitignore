@@ -133,3 +133,4 @@ dmypy.json
 /test_img
 output.tif
 *.tif
+/gen_lut
