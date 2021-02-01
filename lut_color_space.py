@@ -187,23 +187,23 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
 
     if input_gamut == 'srgb' and out_gamut == 'sgamut': #srgb与rec.709色域相同，这里用srgb指代
         mat = np.linalg.inv(colorpy_mat(sgamut_xy, w_D65))
-        img = cs_convert('srgb', 'xyz', img)
+        img = cs_convert('srgb', 'xyz', img, clip=False)
         img = vector_dot(mat, img)
 
     elif input_gamut == 'sgamut' and out_gamut == 'srgb':
         mat = colorpy_mat(sgamut_xy, w_D65)
         img = vector_dot(mat, img)
-        img = cs_convert('xyz', 'srgb', img)
+        img = cs_convert('xyz', 'srgb', img, clip=False)
 
     elif input_gamut == 'srgb' and out_gamut == 'alexawg': #srgb与rec.709色域相同，这里用srgb指代
         mat = np.linalg.inv(colorpy_mat(alexawg_xy, w_D65))
-        img = cs_convert('srgb', 'xyz', img)
+        img = cs_convert('srgb', 'xyz', img, clip=False)
         img = vector_dot(mat, img)
 
     elif input_gamut == 'alexawg' and out_gamut == 'srgb':
         mat = colorpy_mat(alexawg_xy, w_D65)
         img = vector_dot(mat, img)
-        img = cs_convert('xyz', 'srgb', img)
+        img = cs_convert('xyz', 'srgb', img, clip=False)
 
     elif input_gamut == out_gamut:
         pass
@@ -251,21 +251,22 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
 if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
     # img_in = colour.read_image('test_img/lena_std.tif')
     # img_in = colour.read_image('test_img/Alexa.jpg')
-    # img_in = colour.read_image('test_img/s-log.tif')
-    img_in = colour.read_image('HALD_36.png')
+    img_in = colour.read_image('test_img/s-log.tif')
+    # img_in = colour.read_image('HALD_36.png')
 
 
     # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
 
-    img_out = gamut_convert('sgamut', 'srgb', img_in)
-    img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
+    # img_out = gamut_convert('sgamut', 'srgb', img_in)
+    # img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
 
-    # img_out = gamma_convert(img_in, output_gamma='slog3')
+    # img_out = gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
+    img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
 
     # img_out = gamut_convert('alexawg', 'srgb', img_in)
     # img_out = gamma_convert(img_out, 2.2, 1)
 
-    # img_out = gamma_convert(img_in, input_gamma='logc')
+    # img_out = gamma_convert(img_in, input_gamma='logc', output_gamma='rec709')
 
     # img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
 

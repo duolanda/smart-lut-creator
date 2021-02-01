@@ -13,10 +13,10 @@ import colour
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/srgb to lab.cube', 'out')
 
-img_in = colour.read_image('HALD_36.png')
-img_out = cs.cs_convert('srgb', 'hsv', img_in)
-colour.write_image(img_out,'HALD_out.png')
-cp.compute_lut('', 36, 'gen_lut/srgb to hsv.cube', 'out')
+# img_in = colour.read_image('HALD_36.png')
+# img_out = cs.cs_convert('srgb', 'hsv', img_in)
+# colour.write_image(img_out,'HALD_out.png')
+# cp.compute_lut('', 36, 'gen_lut/srgb to hsv.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
 # img_out = cs.cs_convert('srgb', 'ycbcr', img_in)
@@ -63,25 +63,30 @@ cp.compute_lut('', 36, 'gen_lut/srgb to hsv.cube', 'out')
 
 # # gamma 转换
 
-# img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamma_convert(img_in, input_gamma='slog3')
-# colour.write_image(img_out,'HALD_out.png')
-# cp.compute_lut('', 36, 'gen_lut/slog3 to rec709.cube', 'out')
+img_in = colour.read_image('HALD_36.png')
+img_out = cs.gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709')
+colour.write_image(img_out,'HALD_out.png')
+cp.compute_lut('', 36, 'gen_lut/slog3 to rec709.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamma_convert(img_in, output_gamma='slog3')
+# img_out = cs.gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/rec709 to slog3.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamma_convert(img_in, input_gamma='logc')
+# img_out = cs.gamma_convert(img_in, input_gamma='logc', output_gamma='rec709')
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/logc to rec709.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamma_convert(img_in, output_gamma='logc')
+# img_out = cs.gamma_convert(img_in, input_gamma='rec709', output_gamma='logc')
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/rec709 to logc.cube', 'out')
+
+# img_in = colour.read_image('HALD_36.png')
+# img_out = cs.gamma_convert(img_in, input_gamma='rec709', output_gamma='srgb')
+# colour.write_image(img_out,'HALD_out.png')
+# cp.compute_lut('', 36, 'gen_lut/rec709 to srgb.cube', 'out')
 
 
 
