@@ -150,12 +150,12 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
 
     #cie 1931
     w_D65 = [0.95047, 1, 1.08883]
-    w_A = [109.850, 100, 35.585]
-    w_C = [98.074, 100, 118.232]
-    w_D50 = [96.422, 100, 82.521]
-    w_D55 = [95.682, 100, 92.149]
-    w_D65 = [95.047, 100, 108.883]
-    w_D75 = [94.972, 100, 122.638]
+    # 下面这些要处理成 Y = 1
+    # w_A = [109.850, 100, 35.585]
+    # w_C = [98.074, 100, 118.232]
+    # w_D50 = [96.422, 100, 82.521]
+    # w_D55 = [95.682, 100, 92.149]
+    # w_D75 = [94.972, 100, 122.638]
 
     def colorpy_mat(xy, wp):
         '''
@@ -257,11 +257,11 @@ if __name__ == '__main__': #如果不用这个，导包的时候下面的语句�
 
     # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
 
-    # img_out = gamut_convert('sgamut', 'srgb', img_in)
-    # img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
+    img_out = gamut_convert('sgamut', 'srgb', img_in)
+    img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
 
     # img_out = gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
-    img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
+    # img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
 
     # img_out = gamut_convert('alexawg', 'srgb', img_in)
     # img_out = gamma_convert(img_out, 2.2, 1)

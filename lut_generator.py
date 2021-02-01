@@ -35,21 +35,19 @@ import colour
 
 # # 色域转换
 # img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamut_convert('sgamut', 'srgb', img_in)
-# img_out = img_out*9/7 #原图归一化除7，HALD 归一化除 9,所以效果不一样，但这只是缓兵之计，不可能每张图都手动调
-# img_out = cs.gamma_convert(img_out, 2.2, 1) 
+# img_out = cs.gamut_convert('sgamut', 'srgb', img_in, False)
+# img_out = cs.gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/sgamut to srgb.cube', 'out')
 
-# img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamut_convert('srgb', 'sgamut', img_in)
-# img_out = cs.gamma_convert(img_out, 1, 2.2) 
-# colour.write_image(img_out,'HALD_out.png')
-# cp.compute_lut('', 36, 'gen_lut/srgb to sgamut.cube', 'out')
+img_in = colour.read_image('HALD_36.png')
+img_out = cs.gamut_convert('srgb', 'sgamut', img_in)
+img_out = cs.gamma_convert(img_out, 1, 2.2) 
+colour.write_image(img_out,'HALD_out.png')
+cp.compute_lut('', 36, 'gen_lut/srgb to sgamut.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
-# img_out = cs.gamut_convert('alexawg', 'srgb', img_in)
-# img_out = img_out*9/7
+# img_out = cs.gamut_convert('alexawg', 'srgb', img_in, False)
 # img_out = cs.gamma_convert(img_out, 2.2, 1)
 # colour.write_image(img_out,'HALD_out.png')
 # cp.compute_lut('', 36, 'gen_lut/alexawg to srgb.cube', 'out')
@@ -63,10 +61,10 @@ import colour
 
 # # gamma 转换
 
-img_in = colour.read_image('HALD_36.png')
-img_out = cs.gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709')
-colour.write_image(img_out,'HALD_out.png')
-cp.compute_lut('', 36, 'gen_lut/slog3 to rec709.cube', 'out')
+# img_in = colour.read_image('HALD_36.png')
+# img_out = cs.gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709')
+# colour.write_image(img_out,'HALD_out.png')
+# cp.compute_lut('', 36, 'gen_lut/slog3 to rec709.cube', 'out')
 
 # img_in = colour.read_image('HALD_36.png')
 # img_out = cs.gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
