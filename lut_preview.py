@@ -2,10 +2,7 @@ from PIL import Image, ImageFilter, ImageMath
 
 from itertools import chain
 
-try:
-    import numpy
-except ImportError:  # pragma: no cover
-    numpy = None
+import numpy as np
 
 
 def load_cube_file(lines, target_mode=None, cls=ImageFilter.Color3DLUT):

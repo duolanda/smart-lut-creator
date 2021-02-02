@@ -20,59 +20,31 @@ def xyz_color (x, y, z = None):
 
 def srgb(img, to_linear):
     if to_linear:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] <=0.04045:
-                        img[i][j][k] = img[i][j][k]/12.92
-                    else:
-                        img[i][j][k] = ((img[i][j][k]+0.055)/1.055)**2.4
+        choicelist = [img / 12.92, ((img + 0.055) / 1.055) ** 2.4]
+        img = np.select([img <= 0.04045, True], choicelist)
     else:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] <=0.0031308:
-                        img[i][j][k] = 12.92 * img[i][j][k]
-                    else:
-                        img[i][j][k] = 1.055 * img[i][j][k]**(1/2.4)-0.055
+        choicelist = [img * 12.92, (img ** (1 / 2.4)) * 1.055 - 0.055]
+        img = np.select([img <= 0.0031308, True], choicelist)
     return img
 
 def rec709(img, to_linear):
     if to_linear:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] <=0.081:
-                        img[i][j][k] = img[i][j][k]/4.5
-                    else:
-                        img[i][j][k] = ((img[i][j][k]+0.099)/1.099)**(1/0.45)
+        choicelist = [img / 4.5, ((img + 0.099) / 1.099) ** (1/0.45)]
+        img = np.select([img <= 0.081, True], choicelist)
     else:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] <0.018:
-                        img[i][j][k] = 4.5* img[i][j][k]
-                    else:
-                        img[i][j][k] = 1.099 * img[i][j][k]**(0.45)-0.099
+        choicelist = [img * 4.5, (img ** (0.45)) * 1.099 - 0.099]
+        img = np.select([img <= 0.018, True], choicelist)
     return img
 
 def slog3(img, to_linear):
     if to_linear:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] >= 171.2102946929 / 1023:
-                        img[i][j][k] = (10**((img[i][j][k]*1023-420)/261.5))*(0.18+0.01)-0.01
-                    else:
-                        img[i][j][k] = (img[i][j][k]*1023-95)*0.01125/(171.2102946929-95)
+        choicelist = [(10**((img*1023-420)/261.5))*(0.18+0.01)-0.01, 
+                    (img*1023-95)*0.01125/(171.2102946929-95)]
+        img = np.select([img >= 171.2102946929 / 1023, True], choicelist)
     else:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] >= 0.01125:
-                        img[i][j][k] = (420+math.log10((img[i][j][k]+0.01)/(0.18+0.01))*261.5)/1023
-                    else:
-                        img[i][j][k] = (img[i][j][k]*(171.2102946929-95)/0.01125+95)/1023
+        choicelist = [(420+math.log10((img+0.01)/(0.18+0.01))*261.5)/1023, 
+                    (img*(171.2102946929-95)/0.01125+95)/1023]
+        img = np.select([img >= 0.01125, True], choicelist)
     return img
 
 def logc(img, to_linear): 
@@ -86,21 +58,13 @@ def logc(img, to_linear):
     f = 0.092809 
 
     if to_linear:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] > e*cut+f:
-                        img[i][j][k] = (10**((img[i][j][k]-d)/c)-b)/a
-                    else:
-                        img[i][j][k] = (img[i][j][k]-f)/e
+        choicelist = [(10**((img-d)/c)-b)/a, 
+                    (img-f)/e]
+        img = np.select([img > e*cut+f, True], choicelist)
     else:
-        for i in range(len(img)):
-            for j in range(len(img[i])):
-                for k in range(3):
-                    if img[i][j][k] > cut:
-                        img[i][j][k] = c*math.log10(a*img[i][j][k]+b)+d
-                    else:
-                        img[i][j][k] = e*img[i][j][k]+f
+        choicelist = [c*math.log10(a*img+b)+d, 
+                    e*img[i][j][k]+f]
+        img = np.select([img > cut, True], choicelist)
     return img
 
 def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
@@ -250,21 +214,21 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
 
 if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
     # img_in = colour.read_image('test_img/lena_std.tif')
-    # img_in = colour.read_image('test_img/Alexa.jpg')
-    img_in = colour.read_image('test_img/s-log.tif')
+    img_in = colour.read_image('test_img/Alexa.jpg')
+    # img_in = colour.read_image('test_img/s-log.tif')
     # img_in = colour.read_image('HALD_36.png')
 
 
     # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
 
-    img_out = gamut_convert('sgamut', 'srgb', img_in)
-    img_out = gamma_convert(img_out, 2.2, 1) #完成色域转换必须调 gamma
+    # img_out = gamut_convert('sgamut', 'srgb', img_in)
+    # img_out = gamma_convert(img_out, 'rec709', 1) #完成色域转换必须调 gamma
 
     # img_out = gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
     # img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
 
-    # img_out = gamut_convert('alexawg', 'srgb', img_in)
-    # img_out = gamma_convert(img_out, 2.2, 1)
+    img_out = gamut_convert('alexawg', 'srgb', img_in)
+    img_out = gamma_convert(img_out, 'rec709', 1)
 
     # img_out = gamma_convert(img_in, input_gamma='logc', output_gamma='rec709')
 
