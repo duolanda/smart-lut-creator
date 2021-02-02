@@ -21,7 +21,7 @@ def xyz_color (x, y, z = None):
 def srgb(img, to_linear):
     if to_linear:
         choicelist = [img / 12.92, ((img + 0.055) / 1.055) ** 2.4]
-        img = np.select([img <= 0.04045, True], choicelist)
+        img = np.select([img <= 0.04045, True], choicelist) #其实就是对满足条件的执行 choicelist 里的第一个计算，不满足的执行第二个
     else:
         choicelist = [img * 12.92, (img ** (1 / 2.4)) * 1.055 - 0.055]
         img = np.select([img <= 0.0031308, True], choicelist)
@@ -208,6 +208,7 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
     if clip:
         img[img>1] = 1
         img[img<0] = 0
+        # 可以用 np.clip 替代
 
     return img
 
