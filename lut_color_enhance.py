@@ -3,9 +3,6 @@ from math import sin
 import colour
 import numpy 
 
-from PIL import Image
-from pillow_lut import load_hald_image, rgb_color_enhance
-
 
 def _rgb_to_yuv(r, g, b):
     y = (0.299 * r) + (0.587 * g) + (0.114 * b)
@@ -21,7 +18,7 @@ def _yuv_to_rgb(y, u, v):
     return r, g, b
 
 
-def my_rgb_color_enhance(source,
+def rgb_color_enhance(source,
                       brightness=0, exposure=0, contrast=0, warmth=0,
                       saturation=0, vibrance=0):
 
@@ -54,10 +51,10 @@ def my_rgb_color_enhance(source,
             raise ValueError("Vibrance should be from -1.0 to 1.0")
         vibrance = vibrance * 2
 
-
-    r = source[:,:,0]
-    g = source[:,:,1]
-    b = source[:,:,2]
+    output = source.copy() #直接改 source 的话会把 img_in 也改掉
+    r = output[:,:,0]
+    g = output[:,:,1]
+    b = output[:,:,2]
 
     if contrast:
         r = (r - 0.5) * contrast + 0.5
@@ -95,52 +92,28 @@ def my_rgb_color_enhance(source,
         v += scale * warmth[2]
         r, g, b = _yuv_to_rgb(y, u, v)
 
-    source[:,:,0],source[:,:,1],source[:,:,2] = r,g,b
-    output = source.clip(0,1)
+    output[:,:,0], output[:,:,1], output[:,:,2] = r, g, b
+    output = output.clip(0,1)
     return output
 
 if __name__ == '__main__': 
     img_in = colour.read_image('test_img/fruits.tif')
 
-    img_out = my_rgb_color_enhance(img_in, brightness = 0.5) #-1~1
+    img_out = rgb_color_enhance(img_in, brightness = 0.5) #-1~1
     colour.write_image(img_out, 'test_img/ce-brightness.png')
 
-    img_out = my_rgb_color_enhance(img_in, exposure = 2.0) #-5~5
+    img_out = rgb_color_enhance(img_in, exposure = 2.0) #-5~5
     colour.write_image(img_out, 'test_img/ce-exposure.png')
 
-    img_out = my_rgb_color_enhance(img_in, warmth = 0.5) #-1~1
+    img_out = rgb_color_enhance(img_in, warmth = 0.5) #-1~1
     colour.write_image(img_out, 'test_img/ce-warmth.png')
 
-    img_out = my_rgb_color_enhance(img_in, contrast = 3.0) #-1~5
+    img_out = rgb_color_enhance(img_in, contrast = 3.0) #-1~5
     colour.write_image(img_out, 'test_img/ce-contrast.png')
 
-    img_out = my_rgb_color_enhance(img_in, saturation = 3.0) #-1~5
+    img_out = rgb_color_enhance(img_in, saturation = 3.0) #-1~5
     colour.write_image(img_out, 'test_img/ce-saturation.png')
 
-    img_out = my_rgb_color_enhance(img_in, vibrance = 0.5) #-1~1
+    img_out = rgb_color_enhance(img_in, vibrance = 0.5) #-1~1
     colour.write_image(img_out, 'test_img/ce-vibrance.png')
 
-    #pil
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, brightness = 0.5)
-    # im.filter(lut).save('test_img/pil-brightness.png')
-
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, exposure = 2.0)
-    # im.filter(lut).save('test_img/pil-exposure.png')
-
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, warmth = 0.5)
-    # im.filter(lut).save('test_img/pil-warmth.png')
-
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, contrast = 3.0)
-    # im.filter(lut).save('test_img/pil-contrast.png')
-
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, saturation = 3.0)
-    # im.filter(lut).save('test_img/pil-saturation.png')
-
-    # im = Image.open('test_img/fruits.tif')
-    # lut = rgb_color_enhance(33, vibrance = 0.5)
-    # im.filter(lut).save('test_img/pil-vibrance.png')
