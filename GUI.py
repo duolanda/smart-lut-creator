@@ -18,6 +18,7 @@ from PySide6.QtGui import QImage, QPixmap
 
 import colour
 import numpy as np
+from lut_color_enhance import rgb_color_enhance
 
 class LutUI():
     def __init__(self):
@@ -27,14 +28,62 @@ class LutUI():
 
         self.ui = QUiLoader().load(qfile_gui)
 
-        self.ui.keyPressEvent = self.keyPressEvent
+        self.init_color_enhence()
+
         self.ui.openImage.triggered.connect(self.open_img)
+        self.ui.zoomInButton.clicked.connect(self.zoomin)
+        self.ui.zoomOutButton.clicked.connect(self.zoomout)
+
+        self.ui.brightnessSlider.valueChanged.connect(self.brightness_edit)
+        # self.ui.contrastSlider.valueChanged.connect(self.contrast_edit)
+        # self.ui.exposureSlider.valueChanged.connect(self.exposure_edit)
+        # self.ui.saturationSlider.valueChanged.connect(self.saturation_edit)
+        # self.ui.vibranceSlider.valueChanged.connect(self.vibrance_edit)
+        # self.ui.warmthSlider.valueChanged.connect(self.warmth_edit)
+
+        self.ui.brightnessLineEdit.textChanged.connect(self.brightness_edit_line)
 
 
+        
+
+    def init_color_enhence(self):
+        # 滑块只支持 int，所以要做个映射，滑块-100~100 对应文本框 -1~1
+        brightnessSlider = self.ui.brightnessSlider
+        contrastSlider = self.ui.contrastSlider
+        exposureSlider = self.ui.exposureSlider
+        saturationSlider = self.ui.saturationSlider
+        vibranceSlider = self.ui.vibranceSlider
+        warmthSlider = self.ui.warmthSlider
+
+        brightnessSlider.setMinimum(-100)	
+        brightnessSlider.setMaximum(100)	
+
+        contrastSlider.setMinimum(-100)	
+        contrastSlider.setMaximum(500)	
+
+        exposureSlider.setMinimum(-500)	
+        exposureSlider.setMaximum(500)	
+
+        saturationSlider.setMinimum(-100)	
+        saturationSlider.setMaximum(500)	
+
+        vibranceSlider.setMinimum(-100)	
+        vibranceSlider.setMaximum(500)	
+
+        warmthSlider.setMinimum(-100)	
+        warmthSlider.setMaximum(100)	
+
+        self.ui.brightnessLineEdit.setText(str(brightnessSlider.value()))
+        self.ui.contrastLineEdit.setText(str(contrastSlider.value()))
+        self.ui.exposureLineEdit.setText(str(exposureSlider.value()))
+        self.ui.saturationLineEdit.setText(str(saturationSlider.value()))
+        self.ui.vibranceLineEdit.setText(str(vibranceSlider.value()))
+        self.ui.warmthLineEdit.setText(str(warmthSlider.value()))
     def open_img(self):
         '''
         打开图像
         '''
+        global img
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
 
         file_name = openfile_name[0][0]
@@ -57,26 +106,35 @@ class LutUI():
         self.zoomscale=self.zoomscale-0.05
         if self.zoomscale<=0:
            self.zoomscale=0.2
-        self.item.setScale(self.zoomscale)                               
+        self.item.setScale(self.zoomscale)    
  
-    
     def zoomout(self):
         """
-        点击方法图像
+        放大图像
         """
         self.zoomscale=self.zoomscale+0.05
         if self.zoomscale>=5:
             self.zoomscale=5
         self.item.setScale(self.zoomscale) 
 
-    def keyPressEvent(self, event):
-        print("按下：" + str(event.key()))
-        if event.key() == Qt.Key.Key_Equal: # =
-            # self.zoomout()
-            print('=')
-        if event.key() == Qt.Key.Key_hyphen: # -
-            # self.zoomin()
-            print('-')
+    def brightness_edit(self):
+        # 真正用的时候应该是对 lut 而不是图像操作，这个 lut 应该是一个 numpy 数组或自己定义的对象
+
+        global img
+        value = self.ui.brightnessSlider.value()/100
+        self.ui.brightnessLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, brightness = value)
+        img_out = (img_out*255).astype(np.uint8)
+        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item = QGraphicsPixmapItem(pix) 
+        self.scene.clear()
+        self.scene.addItem(self.item)
+
+    def brightness_edit_line(self):
+        self.ui.brightnessSlider.setValue(int((self.ui.brightnessLineEdit.text())))
+
 
 
 app = QApplication([])
