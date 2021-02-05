@@ -42,15 +42,19 @@ class LutUI():
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
 
-        self.ui.brightnessSlider.valueChanged.connect(lambda: self.brightness_edit())#用lambda传参
-        # self.ui.contrastSlider.valueChanged.connect(self.contrast_edit)
-        # self.ui.exposureSlider.valueChanged.connect(self.exposure_edit)
-        # self.ui.saturationSlider.valueChanged.connect(self.saturation_edit)
-        # self.ui.vibranceSlider.valueChanged.connect(self.vibrance_edit)
-        # self.ui.warmthSlider.valueChanged.connect(self.warmth_edit)
+        self.ui.brightnessSlider.valueChanged.connect(lambda: self.brightness_edit()) #用lambda传参
+        self.ui.contrastSlider.valueChanged.connect(lambda: self.contrast_edit())
+        self.ui.exposureSlider.valueChanged.connect(lambda: self.exposure_edit())
+        self.ui.saturationSlider.valueChanged.connect(lambda: self.saturation_edit())
+        self.ui.vibranceSlider.valueChanged.connect(lambda: self.vibrance_edit())
+        self.ui.warmthSlider.valueChanged.connect(lambda: self.warmth_edit())
 
         self.ui.brightnessLineEdit.textChanged.connect(lambda: self.brightness_edit(True))
-
+        self.ui.contrastLineEdit.textChanged.connect(lambda: self.contrast_edit(True))
+        self.ui.exposureLineEdit.textChanged.connect(lambda: self.exposure_edit(True))
+        self.ui.saturationLineEdit.textChanged.connect(lambda: self.saturation_edit(True))
+        self.ui.vibranceLineEdit.textChanged.connect(lambda: self.vibrance_edit(True))
+        self.ui.warmthLineEdit.textChanged.connect(lambda: self.warmth_edit(True))
 
         
 
@@ -148,6 +152,82 @@ class LutUI():
         self.ui.brightnessLineEdit.setText(str(value))
         img_out = (img/255).astype(np.float32)
         img_out = rgb_color_enhance(img_out, brightness = value)
+        self.update_img(img_out)
+
+    def contrast_edit(self, line= False):
+        '''
+        调整对比度
+        '''
+        if line: 
+            self.ui.contrastSlider.setValue(int(float(self.ui.contrastLineEdit.text())*100))
+
+        global img
+        value = self.ui.contrastSlider.value()/100
+        self.ui.contrastLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, contrast = value)
+        self.update_img(img_out)
+        
+    def exposure_edit(self, line= False):
+        '''
+        调整曝光
+        '''
+        if line: 
+            self.ui.exposureSlider.setValue(int(float(self.ui.exposureLineEdit.text())*100))
+
+        global img
+        value = self.ui.exposureSlider.value()/100
+        self.ui.exposureLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, exposure = value)
+        self.update_img(img_out)
+
+    def saturation_edit(self, line= False):
+        '''
+        调整饱和度
+        '''
+        if line: 
+            self.ui.saturationSlider.setValue(int(float(self.ui.saturationLineEdit.text())*100))
+
+        global img
+        value = self.ui.saturationSlider.value()/100
+        self.ui.saturationLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, saturation = value)
+        self.update_img(img_out)
+
+    def vibrance_edit(self, line= False):
+        '''
+        调整自然饱和度
+        '''
+        if line: 
+            self.ui.vibranceSlider.setValue(int(float(self.ui.vibranceLineEdit.text())*100))
+
+        global img
+        value = self.ui.vibranceSlider.value()/100
+        self.ui.vibranceLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, vibrance = value)
+        self.update_img(img_out)
+
+    def warmth_edit(self, line= False):
+        '''
+        调整色温
+        '''
+        if line: 
+            self.ui.warmthSlider.setValue(int(float(self.ui.warmthLineEdit.text())*100))
+
+        global img
+        value = self.ui.warmthSlider.value()/100
+        self.ui.warmthLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, warmth = value)
+        self.update_img(img_out)
+
+    def update_img(self, img_out):
+        '''
+        将处理后的图片显示到 UI 上
+        '''
         img_out = (img_out*255).astype(np.uint8)
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
