@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxL
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QImage, QPixmap
+from MyWidget import  myQGraphicsView
 
 import colour
 import numpy as np
@@ -26,11 +27,13 @@ class LutUI():
         qfile_gui.open(QFile.ReadOnly)
         qfile_gui.close()
 
-        self.ui = QUiLoader().load(qfile_gui)
+        loader = QUiLoader()
+        loader.registerCustomWidget(myQGraphicsView)
+        self.ui = loader.load(qfile_gui)
 
         self.init_color_enhence()
 
-        self.ui.openImage.triggered.connect(self.open_img)
+        self.ui.openImage.triggered.connect(self.img_window)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
 
@@ -79,15 +82,23 @@ class LutUI():
         self.ui.saturationLineEdit.setText(str(saturationSlider.value()))
         self.ui.vibranceLineEdit.setText(str(vibranceSlider.value()))
         self.ui.warmthLineEdit.setText(str(warmthSlider.value()))
-    def open_img(self):
+
+    def img_window(self):
         '''
-        打开图像
+        打开图像选择窗口
         '''
-        global img
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
 
         file_name = openfile_name[0][0]
+        self.open_img(file_name)
 
+        
+
+    def open_img(self, file_name):
+        '''
+        输入图像
+        '''
+        global img
         img = colour.read_image(file_name)
         img = (img*255).astype(np.uint8)
         self.zoomscale=1                                                      
@@ -118,6 +129,9 @@ class LutUI():
         self.item.setScale(self.zoomscale) 
 
     def brightness_edit(self, line= False):
+        '''
+        调整亮度
+        '''
         # 真正用的时候应该是对 lut 而不是图像操作，这个 lut 应该是一个 numpy 数组或自己定义的对象
 
         if line: #如果是修改了edit line
@@ -132,8 +146,6 @@ class LutUI():
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
-        # self.scene.clear()
-        # self.scene.addItem(self.item)
 
 
 app = QApplication([])
