@@ -16,6 +16,8 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QImage, QPixmap
 from MyWidget import  myQGraphicsView
+from MySignal import mysgn
+
 
 import colour
 import numpy as np
@@ -30,6 +32,9 @@ class LutUI():
         loader = QUiLoader()
         loader.registerCustomWidget(myQGraphicsView)
         self.ui = loader.load(qfile_gui)
+
+        self.sgn = mysgn
+        self.sgn.drop_img.connect(self.open_img)
 
         self.init_color_enhence()
 
@@ -108,6 +113,7 @@ class LutUI():
         self.item = QGraphicsPixmapItem(pix) #创建像素图元
         self.scene = QGraphicsScene() #创建场景
         self.scene.addItem(self.item)
+        # self.ui.graphicsView = myQGraphicsView()
         self.ui.graphicsView.setScene(self.scene) #将场景添加至视图
 
     def zoomin(self):
