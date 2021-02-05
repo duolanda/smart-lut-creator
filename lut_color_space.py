@@ -114,12 +114,11 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
 
     #cie 1931
     w_D65 = [0.95047, 1, 1.08883]
-    # 下面这些要处理成 Y = 1
-    # w_A = [109.850, 100, 35.585]
-    # w_C = [98.074, 100, 118.232]
-    # w_D50 = [96.422, 100, 82.521]
-    # w_D55 = [95.682, 100, 92.149]
-    # w_D75 = [94.972, 100, 122.638]
+    w_A = [1.0985, 1, 0.35585]
+    w_C = [0.98074, 1, 1.18232]
+    w_D50 = [0.96422, 1, 0.82521]
+    w_D55 = [0.95682, 1, 0.92149]
+    w_D75 = [0.94972, 1, 1.22638]
 
     def colorpy_mat(xy, wp):
         '''
@@ -159,7 +158,7 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
         img = vector_dot(mat, img)
         img = cs_convert('xyz', 'srgb', img, clip=False)
 
-    elif input_gamut == 'srgb' and out_gamut == 'alexawg': #srgb与rec.709色域相同，这里用srgb指代
+    elif input_gamut == 'srgb' and out_gamut == 'alexawg': 
         mat = np.linalg.inv(colorpy_mat(alexawg_xy, w_D65))
         img = cs_convert('srgb', 'xyz', img, clip=False)
         img = vector_dot(mat, img)
@@ -171,6 +170,23 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
 
     elif input_gamut == out_gamut:
         pass
+
+    '''
+    换成下面的写法可以简洁很多，也更容易加入白点的转换
+    if input_gamut == 'srgb':
+        mat = np.linalg.inv(colorpy_mat(out_gamut, w_D65))
+        img = cs_convert('srgb', 'xyz', img, clip=False)
+        img = vector_dot(mat, img)
+    elif out_gamut == 'srgb':
+        mat = colorpy_mat(input_gamut, w_D65)
+        img = vector_dot(mat, img)
+        img = cs_convert('xyz', 'srgb', img, clip=False)
+    else:
+        mat = colorpy_mat(input_gamut, w_D65)
+        img = vector_dot(mat, img)
+        mat = np.linalg.inv(colorpy_mat(out_gamut, w_D65))
+        img = vector_dot(mat, img)
+    '''
 
     if norm:
         img = img/np.max(img)
