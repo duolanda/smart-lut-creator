@@ -34,14 +34,14 @@ class LutUI():
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
 
-        self.ui.brightnessSlider.valueChanged.connect(self.brightness_edit)
+        self.ui.brightnessSlider.valueChanged.connect(lambda: self.brightness_edit())#用lambda传参
         # self.ui.contrastSlider.valueChanged.connect(self.contrast_edit)
         # self.ui.exposureSlider.valueChanged.connect(self.exposure_edit)
         # self.ui.saturationSlider.valueChanged.connect(self.saturation_edit)
         # self.ui.vibranceSlider.valueChanged.connect(self.vibrance_edit)
         # self.ui.warmthSlider.valueChanged.connect(self.warmth_edit)
 
-        self.ui.brightnessLineEdit.textChanged.connect(self.brightness_edit_line)
+        self.ui.brightnessLineEdit.textChanged.connect(lambda: self.brightness_edit(True))
 
 
         
@@ -117,8 +117,11 @@ class LutUI():
             self.zoomscale=5
         self.item.setScale(self.zoomscale) 
 
-    def brightness_edit(self):
+    def brightness_edit(self, line= False):
         # 真正用的时候应该是对 lut 而不是图像操作，这个 lut 应该是一个 numpy 数组或自己定义的对象
+
+        if line: #如果是修改了edit line
+            self.ui.brightnessSlider.setValue(int(float(self.ui.brightnessLineEdit.text())*100))
 
         global img
         value = self.ui.brightnessSlider.value()/100
@@ -128,13 +131,9 @@ class LutUI():
         img_out = (img_out*255).astype(np.uint8)
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
-        self.item = QGraphicsPixmapItem(pix) 
-        self.scene.clear()
-        self.scene.addItem(self.item)
-
-    def brightness_edit_line(self):
-        self.ui.brightnessSlider.setValue(int((self.ui.brightnessLineEdit.text())))
-
+        self.item.setPixmap(pix) 
+        # self.scene.clear()
+        # self.scene.addItem(self.item)
 
 
 app = QApplication([])
