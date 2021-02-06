@@ -1,17 +1,25 @@
 from lut import LUT
 import numpy as np
 
-def lut_to_numpy(lut):
+def lut_to_numpy(lut, bgr = False):
     lattice  = lut.lattice
     size = lut.cubeSize
 
     lut_np = np.zeros((size, size, size, 3))
 
-    for i in range(size):
-        for j in range(size):
-            for k in range(size):
-                p = lattice[i][j][k]
-                lut_np[i][j][k] = [p.b, p.g, p.r] #注意是bgr
+    #适应不同应用的需要，这里的“bgr”并非是理解上的“bgr”，准确的说更像是描述是否符合lut的映射关系，即table[r][g][b]对应值还是table[b][g][r]对应值，一个便于表示映射，一个便于表示lut文件读写
+    if bgr:
+        for i in range(size):
+            for j in range(size):
+                for k in range(size):
+                    p = lattice[i][j][k]
+                    lut_np[i][j][k] = [p.b, p.g, p.r] 
+    else:
+         for i in range(size):
+            for j in range(size):
+                for k in range(size):
+                    p = lattice[i][j][k]
+                    lut_np[i][j][k] = [p.r, p.g, p.b] 
     return lut_np
 
 

@@ -74,7 +74,7 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     name = lut.name
     channels = 3
 
-    table = lut_to_numpy(lut)
+    table = lut_to_numpy(lut, True) #用“bgr”
     table = table.flatten()
 
     instance = cls(size, table, channels=channels,
