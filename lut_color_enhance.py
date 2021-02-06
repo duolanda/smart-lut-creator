@@ -2,6 +2,7 @@ from math import sin
 
 import colour
 import numpy 
+# from PIL import ImageEnhance,Image
 
 
 def _rgb_to_yuv(r, g, b):
@@ -61,6 +62,11 @@ def rgb_color_enhance(source,
         g = (g - 0.5) * contrast + 0.5
         b = (b - 0.5) * contrast + 0.5
 
+        # pil = Image.fromarray(numpy.uint8(source*255))
+        # con = ImageEnhance.Contrast(pil)
+        # rgb = numpy.asarray(con.enhance(contrast))
+        # r,g,b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
+
     if saturation:
         avg_v = r * 0.2126 + g * 0.7152 + b * 0.0722
         r += (r - avg_v) * saturation
@@ -99,21 +105,21 @@ def rgb_color_enhance(source,
 if __name__ == '__main__': 
     img_in = colour.read_image('test_img/fruits.tif')
 
-    img_out = rgb_color_enhance(img_in, brightness = 0.5) #-1~1
-    colour.write_image(img_out, 'test_img/ce-brightness.png')
+    # img_out = rgb_color_enhance(img_in, brightness = 0.5) #-1~1
+    # colour.write_image(img_out, 'test_img/ce-brightness.png')
 
-    img_out = rgb_color_enhance(img_in, exposure = 2.0) #-5~5
-    colour.write_image(img_out, 'test_img/ce-exposure.png')
+    # img_out = rgb_color_enhance(img_in, exposure = 2.0) #-5~5
+    # colour.write_image(img_out, 'test_img/ce-exposure.png')
 
-    img_out = rgb_color_enhance(img_in, warmth = 0.5) #-1~1
-    colour.write_image(img_out, 'test_img/ce-warmth.png')
+    # img_out = rgb_color_enhance(img_in, warmth = 0.5) #-1~1
+    # colour.write_image(img_out, 'test_img/ce-warmth.png')
 
     img_out = rgb_color_enhance(img_in, contrast = 3.0) #-1~5
     colour.write_image(img_out, 'test_img/ce-contrast.png')
 
-    img_out = rgb_color_enhance(img_in, saturation = 3.0) #-1~5
-    colour.write_image(img_out, 'test_img/ce-saturation.png')
+    # img_out = rgb_color_enhance(img_in, saturation = 3.0) #-1~5
+    # colour.write_image(img_out, 'test_img/ce-saturation.png')
 
-    img_out = rgb_color_enhance(img_in, vibrance = 0.5) #-1~1
-    colour.write_image(img_out, 'test_img/ce-vibrance.png')
+    # img_out = rgb_color_enhance(img_in, vibrance = 0.5) #-1~1
+    # colour.write_image(img_out, 'test_img/ce-vibrance.png')
 
