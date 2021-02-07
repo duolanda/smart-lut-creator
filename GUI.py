@@ -62,6 +62,9 @@ class LutUI():
 
     def init_color_enhence(self):
         # 滑块只支持 int，所以要做个映射，滑块-100~100 对应文本框 -1~1
+        global enhence_list
+        enhence_list = [0,0,0,0,0,0,0] #亮度、对比度、曝光、饱和度、自然饱和度、色温、色调
+
         brightnessSlider = self.ui.brightnessSlider
         contrastSlider = self.ui.contrastSlider
         exposureSlider = self.ui.exposureSlider
@@ -155,12 +158,11 @@ class LutUI():
         if line: #如果是修改了edit line
             self.ui.brightnessSlider.setValue(int(float(self.ui.brightnessLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.brightnessSlider.value()/100
         self.ui.brightnessLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, brightness = value)
-        self.update_img(img_out)
+        enhence_list[0] = value
+        self.update_img()
 
     def contrast_edit(self, line= False):
         '''
@@ -169,12 +171,11 @@ class LutUI():
         if line: 
             self.ui.contrastSlider.setValue(int(float(self.ui.contrastLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.contrastSlider.value()/100
         self.ui.contrastLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, contrast = value)
-        self.update_img(img_out)
+        enhence_list[1] = value
+        self.update_img()
         
     def exposure_edit(self, line= False):
         '''
@@ -183,12 +184,11 @@ class LutUI():
         if line: 
             self.ui.exposureSlider.setValue(int(float(self.ui.exposureLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.exposureSlider.value()/100
         self.ui.exposureLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, exposure = value)
-        self.update_img(img_out)
+        enhence_list[2] = value
+        self.update_img()
 
     def saturation_edit(self, line= False):
         '''
@@ -197,12 +197,11 @@ class LutUI():
         if line: 
             self.ui.saturationSlider.setValue(int(float(self.ui.saturationLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.saturationSlider.value()/100
         self.ui.saturationLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, saturation = value)
-        self.update_img(img_out)
+        enhence_list[3] = value
+        self.update_img()
 
     def vibrance_edit(self, line= False):
         '''
@@ -211,12 +210,11 @@ class LutUI():
         if line: 
             self.ui.vibranceSlider.setValue(int(float(self.ui.vibranceLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.vibranceSlider.value()/100
         self.ui.vibranceLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, vibrance = value)
-        self.update_img(img_out)
+        enhence_list[4] = value
+        self.update_img()
 
     def warmth_edit(self, line= False):
         '''
@@ -225,12 +223,11 @@ class LutUI():
         if line: 
             self.ui.warmthSlider.setValue(int(float(self.ui.warmthLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.warmthSlider.value()/100
         self.ui.warmthLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, warmth = value)
-        self.update_img(img_out)
+        enhence_list[5] = value
+        self.update_img()
 
     def tint_edit(self, line= False):
         '''
@@ -239,18 +236,21 @@ class LutUI():
         if line: 
             self.ui.tintSlider.setValue(int(float(self.ui.tintLineEdit.text())*100))
 
-        global img
+        global img, enhence_list
         value = self.ui.tintSlider.value()/100
         self.ui.tintLineEdit.setText(str(value))
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, tint = value)
-        self.update_img(img_out)
+        enhence_list[6] = value
+        self.update_img()
 
-    def update_img(self, img_out):
+    def update_img(self):
         '''
         将处理后的图片显示到 UI 上
         '''
+        global img, enhence_list
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
         img_out = (img_out*255).astype(np.uint8)
+
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
