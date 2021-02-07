@@ -2,7 +2,6 @@ from math import sin
 
 import colour
 import numpy 
-# from PIL import ImageEnhance,Image
 
 
 def _rgb_to_yuv(r, g, b):
@@ -21,7 +20,7 @@ def _yuv_to_rgb(y, u, v):
 
 def rgb_color_enhance(source,
                       brightness=0, exposure=0, contrast=0, warmth=0,
-                      saturation=0, vibrance=0):
+                      saturation=0, vibrance=0, tint=0):
 
     if brightness:
         if not -1.0 <= brightness <= 1.0:
@@ -35,6 +34,8 @@ def rgb_color_enhance(source,
     if contrast:
         if not -1.0 <= contrast <= 5.0 :
             raise ValueError("Contrast should be from -1.0 to 5.0")
+        if contrast == -1:
+            contrast = -0.99 #-1+1=0，不能进入contrast逻辑，手动修正一下
         contrast = contrast + 1
 
     if warmth:
@@ -52,6 +53,11 @@ def rgb_color_enhance(source,
             raise ValueError("Vibrance should be from -1.0 to 1.0")
         vibrance = vibrance * 2
 
+    if tint:
+        if not -0.5 <= tint <= 0.5:
+            raise ValueError("Tint should be from -0.5 to 0.5")
+        tint = 2.2*tint
+
     output = source.copy() #直接改 source 的话会把 img_in 也改掉
     r = output[:,:,0]
     g = output[:,:,1]
@@ -62,10 +68,6 @@ def rgb_color_enhance(source,
         g = (g - 0.5) * contrast + 0.5
         b = (b - 0.5) * contrast + 0.5
 
-        # pil = Image.fromarray(numpy.uint8(source*255))
-        # con = ImageEnhance.Contrast(pil)
-        # rgb = numpy.asarray(con.enhance(contrast))
-        # r,g,b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
 
     if saturation:
         avg_v = r * 0.2126 + g * 0.7152 + b * 0.0722
@@ -97,6 +99,11 @@ def rgb_color_enhance(source,
         u += scale * warmth[1]
         v += scale * warmth[2]
         r, g, b = _yuv_to_rgb(y, u, v)
+
+    if tint:
+        g = g-tint
+        g = numpy.clip(g, 0, 1)
+        print(g, tint)
 
     output[:,:,0], output[:,:,1], output[:,:,2] = r, g, b
     output = output.clip(0,1)

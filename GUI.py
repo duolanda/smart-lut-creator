@@ -48,13 +48,15 @@ class LutUI():
         self.ui.saturationSlider.valueChanged.connect(lambda: self.saturation_edit())
         self.ui.vibranceSlider.valueChanged.connect(lambda: self.vibrance_edit())
         self.ui.warmthSlider.valueChanged.connect(lambda: self.warmth_edit())
+        self.ui.tintSlider.valueChanged.connect(lambda: self.tint_edit())
+
 
         self.ui.brightnessLineEdit.textChanged.connect(lambda: self.brightness_edit(True))
         self.ui.contrastLineEdit.textChanged.connect(lambda: self.contrast_edit(True))
         self.ui.exposureLineEdit.textChanged.connect(lambda: self.exposure_edit(True))
         self.ui.saturationLineEdit.textChanged.connect(lambda: self.saturation_edit(True))
         self.ui.vibranceLineEdit.textChanged.connect(lambda: self.vibrance_edit(True))
-        self.ui.warmthLineEdit.textChanged.connect(lambda: self.warmth_edit(True))
+        self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
         
 
@@ -66,6 +68,8 @@ class LutUI():
         saturationSlider = self.ui.saturationSlider
         vibranceSlider = self.ui.vibranceSlider
         warmthSlider = self.ui.warmthSlider
+        tintSlider = self.ui.tintSlider
+
 
         brightnessSlider.setMinimum(-100)	
         brightnessSlider.setMaximum(100)	
@@ -85,12 +89,16 @@ class LutUI():
         warmthSlider.setMinimum(-100)	
         warmthSlider.setMaximum(100)	
 
+        tintSlider.setMinimum(-50)	
+        tintSlider.setMaximum(50)	
+
         self.ui.brightnessLineEdit.setText(str(brightnessSlider.value()))
         self.ui.contrastLineEdit.setText(str(contrastSlider.value()))
         self.ui.exposureLineEdit.setText(str(exposureSlider.value()))
         self.ui.saturationLineEdit.setText(str(saturationSlider.value()))
         self.ui.vibranceLineEdit.setText(str(vibranceSlider.value()))
         self.ui.warmthLineEdit.setText(str(warmthSlider.value()))
+        self.ui.tintLineEdit.setText(str(tintSlider.value()))
 
     def img_window(self):
         '''
@@ -222,6 +230,20 @@ class LutUI():
         self.ui.warmthLineEdit.setText(str(value))
         img_out = (img/255).astype(np.float32)
         img_out = rgb_color_enhance(img_out, warmth = value)
+        self.update_img(img_out)
+
+    def tint_edit(self, line= False):
+        '''
+        调整色调
+        '''
+        if line: 
+            self.ui.tintSlider.setValue(int(float(self.ui.tintLineEdit.text())*100))
+
+        global img
+        value = self.ui.tintSlider.value()/100
+        self.ui.tintLineEdit.setText(str(value))
+        img_out = (img/255).astype(np.float32)
+        img_out = rgb_color_enhance(img_out, tint = value)
         self.update_img(img_out)
 
     def update_img(self, img_out):
