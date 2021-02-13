@@ -5,7 +5,6 @@
 import numpy as np
 import skimage
 from skimage import io
-from matplotlib import pyplot as plt
 
 def EstimateIlluminantRGB(I, p):
 
@@ -128,9 +127,7 @@ def PerformWhiteBalanceCorrection(I, K, T):
 
     sz = I.shape
     O = (np.zeros(sz)).astype(np.uint8)
-  
-    print("K",K)
-    print("T",T)
+
     for x in range(sz[0]):
         for y in range(sz[1]):
             Fxy = np.asarray([I[x][y][0], I[x][y][1], I[x][y][2]])
@@ -145,16 +142,12 @@ def PerformWhiteBalanceCorrection(I, K, T):
                 if(FWB[p]>255): #避免变黄
                     O[x,y,p] = 255
                     
-        if(x/1200*100%10==0): #手动进度条
-            print(x/1200*100)
     return O
 
 
 if __name__ == '__main__':
 
-    img = skimage.io.imread('test_img/wb.jpg')
-
-    I = skimage.img_as_ubyte(img)
+    I = skimage.io.imread('test_img/wb.jpg')
 
     # 默认参数
 
@@ -187,9 +180,7 @@ if __name__ == '__main__':
 
     O = PerformWhiteBalanceCorrection(I, K, T)
 
-    #      subplot(1,2,1), imshow(I);
-    #      subplot(1,2,2), imshow(O);
-    #print(np.max(O))
-    print('max',np.max(O[:,:,2]), 'min',np.min(O[:,:,2]))
-    plt.imshow(O)
+
     io.imsave('test_img/wb_out.jpg', O)
+
+    #因为算的比较慢，到时候或许可以把分辨率缩小后的图片送进来，然后再把生成的 lut 应用到原图（理论上会损失效果，到时候可以做做先实验）
