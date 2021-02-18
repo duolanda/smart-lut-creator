@@ -42,7 +42,7 @@ def slog3(img, to_linear):
                     (img*1023-95)*0.01125/(171.2102946929-95)]
         img = np.select([img >= 171.2102946929 / 1023, True], choicelist)
     else:
-        choicelist = [(420+math.log10((img+0.01)/(0.18+0.01))*261.5)/1023, 
+        choicelist = [(420+np.log10((img+0.01)/(0.18+0.01))*261.5)/1023, 
                     (img*(171.2102946929-95)/0.01125+95)/1023]
         img = np.select([img >= 0.01125, True], choicelist)
     return img
@@ -62,8 +62,8 @@ def logc(img, to_linear):
                     (img-f)/e]
         img = np.select([img > e*cut+f, True], choicelist)
     else:
-        choicelist = [c*math.log10(a*img+b)+d, 
-                    e*img[i][j][k]+f]
+        choicelist = [c*np.log10(a*img+b)+d, 
+                    e*img+f]
         img = np.select([img > cut, True], choicelist)
     return img
 
@@ -99,8 +99,7 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
     img_out = img_out**(1/output_gamma)
 
     if clip:
-        img_out[img_out>1] = 1
-        img_out[img_out<0] = 0
+        img = np.clip(img, 0, 1)
 
     return img_out
 
@@ -111,14 +110,10 @@ def gamut_convert(in_gamut, out_gamut, img, norm=True, in_wp='D65', out_wp='D65'
     '''
     #存储不同色域 RGB 的 xy 坐标值的字典
     gxydict = {
-        #sRGB
-        'srgb': [[0.64, 0.33], [0.3, 0.6], [0.15, 0.06]],
-        #Sony S-Gamut/S-Gamut3
-        'sgamut': [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]], # 这里的是小写 x,y 顺序为 RGB
-        #Sony S-Gamut.Cine
-        'sgamutcine': [[0.766, 0.275], [0.225, 0.8], [0.089, -0.087]],
-        #ALEXA Wide Gamut RGB
-        'alexawg':[[0.6840, 0.3130], [0.2210, 0.8480], [0.0861, -0.1020]],
+        'sRGB': [[0.64, 0.33], [0.3, 0.6], [0.15, 0.06]],
+        'Sony S-Gamut/S-Gamut3': [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]], # 这里的是小写 x,y 顺序为 RGB
+        'Sony S-Gamut/S-Gamut3.Cine': [[0.766, 0.275], [0.225, 0.8], [0.089, -0.087]],
+        'Arri Wide Gamut':[[0.6840, 0.3130], [0.2210, 0.8480], [0.0861, -0.1020]],
     }
 
     #cie 1931
@@ -158,14 +153,14 @@ def gamut_convert(in_gamut, out_gamut, img, norm=True, in_wp='D65', out_wp='D65'
             phosphor_blue  * intensities [2]))
 
         return specical_to_xyz_matrix
-        
+
 
     if in_gamut == out_gamut and in_wp == out_wp:
         return img
     else:
-        mat = colorpy_mat(gxydict[in_gamut], wpdict[in_wp])
-        img = vector_dot(mat, img)
-        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], wpdict[out_wp]))
+        mat_i = colorpy_mat(gxydict[in_gamut], wpdict[in_wp])
+        mat_o = np.linalg.inv(colorpy_mat(gxydict[out_gamut], wpdict[out_wp]))
+        mat = np.dot(mat_o, mat_i)
         img = vector_dot(mat, img)
 
 
@@ -180,38 +175,42 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
     if input_gamma == output_gamma:
         return img
 
-    if input_gamma == 'slog3':
+    if input_gamma == 'Sony S-Log3':
         img = slog3(img, to_linear = True)
-    elif input_gamma == 'logc':
+    elif input_gamma == 'Arri LogC EI 800':
         img = logc(img, to_linear = True)
-    elif input_gamma == 'srgb':
+    elif input_gamma == 'sRGB':
         img = srgb(img, to_linear = True)
-    elif input_gamma == 'rec709':
+    elif input_gamma == 'Rec.709':
         img = rec709(img, to_linear = True)
+    elif input_gamma == 'Linear':
+        img = img ** 1 
     else:
         img = img ** input_gamma
 
-    if output_gamma == 'slog3':
+    if output_gamma == 'Sony S-Log3':
         img = slog3(img, to_linear = False)
-    elif output_gamma == 'logc':
+    elif output_gamma == 'Arri LogC EI 800':
         img = logc(img, to_linear = False)
-    elif output_gamma == 'srgb':
+    elif output_gamma == 'sRGB':
         img = srgb(img, to_linear = False)
-    elif output_gamma == 'rec709':
+    elif output_gamma == 'Rec.709':
         img = rec709(img, to_linear = False)
+    elif output_gamma == 'Linear':
+        img = img ** 1 
     else:
         img = img ** (1/output_gamma)
 
     if clip:
-        np.clip(img, 0, 1)
+        img = np.clip(img, 0, 1)
 
     return img
 
 
 if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
-    # img_in = colour.read_image('test_img/lena_std.tif')
+    img_in = colour.read_image('test_img/lena_std.tif')
     # img_in = colour.read_image('test_img/fruits.tif')
-    img_in = colour.read_image('test_img/Alexa.jpg')
+    # img_in = colour.read_image('test_img/Alexa.jpg')
     # img_in = colour.read_image('test_img/s-log.tif')
     # img_in = colour.read_image('HALD_36.png')
 
@@ -224,15 +223,17 @@ if __name__ == '__main__': #如果不用这个，导包的时候下面的语句�
     # img_out = gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
     # img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
 
-    img_out = gamut_convert('alexawg', 'srgb', img_in)
-    img_out = gamma_convert(img_out, 'srgb', 'rec709')
+    # img_out = gamut_convert('alexawg', 'srgb', img_in)
+    # img_out = gamma_convert(img_out, 'srgb', 'rec709')
 
-    # img_out = gamma_convert(img_in, input_gamma='logc', output_gamma='rec709')
+    img_out = gamma_convert(img_in, input_gamma='Sony S-Log3', output_gamma='sRGB')
 
     # img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
 
     # img_out = gamut_convert('srgb', 'srgb', img_in, True, 'D65', 'D50')
-    # img_out = gamma_convert(img_out, 1, 'rec709')
+    # img_out = gamma_convert(img_out, 'rec709', 'srgb')
+
+
 
 
     colour.write_image(img_out, 'test_img/output.png')

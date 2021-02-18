@@ -22,6 +22,7 @@ from MySignal import mysgn
 import colour
 import numpy as np
 from lut_color_enhance import rgb_color_enhance
+from lut_color_space import gamma_convert, gamut_convert
 
 class LutUI():
     def __init__(self):
@@ -36,11 +37,42 @@ class LutUI():
         self.sgn = mysgn
         self.sgn.drop_img.connect(self.open_img)
 
-        self.init_color_enhence()
-
         self.ui.openImage.triggered.connect(self.img_window)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
+
+        #色彩空间转换
+        gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut']
+        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800']
+        wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D75']
+        self.ui.inGamut.addItems(gamut_list)
+        self.ui.inGamma.addItems(gamma_list)
+        self.ui.inWp.addItems(wp_list)
+        self.ui.outGamut.addItems(gamut_list)
+        self.ui.outGamma.addItems(gamma_list)
+        self.ui.outWp.addItems(wp_list)
+
+        # self.ui.inGamut.currentIndexChanged.connect(convert_gamut)
+        # self.ui.outGamut.currentIndexChanged.connect(convert_gamut)
+
+        # self.ui.inGamma.currentIndexChanged.connect(convert_gamma)
+        # self.ui.outGamma.currentIndexChanged.connect(convert_gamma)
+
+        # self.ui.inWp.currentIndexChanged.connect(convert_wp)
+        # self.ui.outWp.currentIndexChanged.connect(convert_wp)
+
+        self.ui.inGamut.currentIndexChanged.connect(self.convert_cs)
+        self.ui.outGamut.currentIndexChanged.connect(self.convert_cs)
+
+        self.ui.inGamma.currentIndexChanged.connect(self.convert_cs)
+        self.ui.outGamma.currentIndexChanged.connect(self.convert_cs)
+
+        self.ui.inWp.currentIndexChanged.connect(self.convert_cs)
+        self.ui.outWp.currentIndexChanged.connect(self.convert_cs)
+
+
+        # 一级校色滑块
+        self.init_color_enhence()
 
         self.ui.brightnessSlider.valueChanged.connect(lambda: self.brightness_edit()) #用lambda传参
         self.ui.contrastSlider.valueChanged.connect(lambda: self.contrast_edit())
@@ -56,6 +88,7 @@ class LutUI():
         self.ui.exposureLineEdit.textChanged.connect(lambda: self.exposure_edit(True))
         self.ui.saturationLineEdit.textChanged.connect(lambda: self.saturation_edit(True))
         self.ui.vibranceLineEdit.textChanged.connect(lambda: self.vibrance_edit(True))
+        self.ui.warmthLineEdit.textChanged.connect(lambda: self.warmth_edit(True))
         self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
         
@@ -118,9 +151,13 @@ class LutUI():
         '''
         输入图像
         '''
-        global img
-        img = colour.read_image(file_name)
-        img = (img*255).astype(np.uint8)
+        global img_float
+
+        self.reset_all() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
+
+
+        img_float = colour.read_image(file_name)
+        img = (img_float*255).astype(np.uint8)
         self.zoomscale=1                                                      
 
         frame = QImage(img, img.shape[1], img.shape[0], QImage.Format_RGB888)
@@ -158,7 +195,7 @@ class LutUI():
         if line: #如果是修改了edit line
             self.ui.brightnessSlider.setValue(int(float(self.ui.brightnessLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.brightnessSlider.value()/100
         self.ui.brightnessLineEdit.setText(str(value))
         enhence_list[0] = value
@@ -171,7 +208,7 @@ class LutUI():
         if line: 
             self.ui.contrastSlider.setValue(int(float(self.ui.contrastLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.contrastSlider.value()/100
         self.ui.contrastLineEdit.setText(str(value))
         enhence_list[1] = value
@@ -184,7 +221,7 @@ class LutUI():
         if line: 
             self.ui.exposureSlider.setValue(int(float(self.ui.exposureLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.exposureSlider.value()/100
         self.ui.exposureLineEdit.setText(str(value))
         enhence_list[2] = value
@@ -197,7 +234,7 @@ class LutUI():
         if line: 
             self.ui.saturationSlider.setValue(int(float(self.ui.saturationLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.saturationSlider.value()/100
         self.ui.saturationLineEdit.setText(str(value))
         enhence_list[3] = value
@@ -210,7 +247,7 @@ class LutUI():
         if line: 
             self.ui.vibranceSlider.setValue(int(float(self.ui.vibranceLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.vibranceSlider.value()/100
         self.ui.vibranceLineEdit.setText(str(value))
         enhence_list[4] = value
@@ -223,7 +260,7 @@ class LutUI():
         if line: 
             self.ui.warmthSlider.setValue(int(float(self.ui.warmthLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.warmthSlider.value()/100
         self.ui.warmthLineEdit.setText(str(value))
         enhence_list[5] = value
@@ -236,7 +273,7 @@ class LutUI():
         if line: 
             self.ui.tintSlider.setValue(int(float(self.ui.tintLineEdit.text())*100))
 
-        global img, enhence_list
+        global enhence_list
         value = self.ui.tintSlider.value()/100
         self.ui.tintLineEdit.setText(str(value))
         enhence_list[6] = value
@@ -246,15 +283,63 @@ class LutUI():
         '''
         将处理后的图片显示到 UI 上
         '''
-        global img, enhence_list
-        img_out = (img/255).astype(np.float32)
-        img_out = rgb_color_enhance(img_out, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+        global img_float, enhence_list
+        img_out = rgb_color_enhance(img_float, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
         img_out = (img_out*255).astype(np.uint8)
+        self.show_img(img_out)
 
+        
+
+    def show_img(self, img_out):
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
 
+
+    def convert_cs(self):
+        '''
+        完成色域/白点/gamma 相关转换
+        '''
+        global img_float
+        in_gamut = self.ui.inGamut.currentText()
+        out_gamut = self.ui.outGamut.currentText()
+
+        in_gamma = self.ui.inGamma.currentText()
+        out_gamma = self.ui.outGamma.currentText()
+
+        in_wp = self.ui.inWp.currentText()
+        out_wp = self.ui.outWp.currentText()
+
+        #等处理好了其它的再把 XYZ、HSV 这些加进来
+        img_out = gamut_convert(in_gamut, out_gamut, img_float, True, in_wp, out_wp)
+        img_out = gamma_convert(img_out, in_gamma, out_gamma)
+
+        img_out = (img_out*255).astype(np.uint8)
+
+        self.show_img(img_out)
+
+    def reset_all(self):
+        '''
+        复位各个参数
+        '''
+        self.init_color_enhence()
+
+        gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut']
+        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800']
+        wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D75']
+        self.ui.inGamut.clear()
+        self.ui.inGamma.clear()
+        self.ui.inWp.clear()
+        self.ui.outGamut.clear()
+        self.ui.outGamma.clear()
+        self.ui.outWp.clear()
+
+        self.ui.inGamut.addItems(gamut_list)
+        self.ui.inGamma.addItems(gamma_list)
+        self.ui.inWp.addItems(wp_list)
+        self.ui.outGamut.addItems(gamut_list)
+        self.ui.outGamma.addItems(gamma_list)
+        self.ui.outWp.addItems(wp_list)
 
 app = QApplication([])
 app.setStyle('WindowsVista')

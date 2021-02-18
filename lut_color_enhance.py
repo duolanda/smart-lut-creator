@@ -103,7 +103,6 @@ def rgb_color_enhance(source,
     if tint:
         g = g-tint
         g = numpy.clip(g, 0, 1)
-        print(g, tint)
 
     output[:,:,0], output[:,:,1], output[:,:,2] = r, g, b
     output = output.clip(0,1)
