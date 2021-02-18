@@ -104,12 +104,15 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
 
     return img_out
 
-def gamut_convert(input_gamut, out_gamut, img, norm=True):
+def gamut_convert(in_gamut, out_gamut, img, norm=True, in_wp='D65', out_wp='D65'):
     '''
-    色域转换函数，input_gamut 和 out_gamut 为字符串
+    色域转换函数，
+    - in_gamut 和 out_gamut 为字符串
     '''
-    #存储不同色欲 RGB 的 xy 坐标值的字典
+    #存储不同色域 RGB 的 xy 坐标值的字典
     gxydict = {
+        #sRGB
+        'srgb': [[0.64, 0.33], [0.3, 0.6], [0.15, 0.06]],
         #Sony S-Gamut/S-Gamut3
         'sgamut': [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]], # 这里的是小写 x,y 顺序为 RGB
         #Sony S-Gamut.Cine
@@ -119,12 +122,14 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
     }
 
     #cie 1931
-    w_D65 = [0.95047, 1, 1.08883]
-    w_A = [1.0985, 1, 0.35585]
-    w_C = [0.98074, 1, 1.18232]
-    w_D50 = [0.96422, 1, 0.82521]
-    w_D55 = [0.95682, 1, 0.92149]
-    w_D75 = [0.94972, 1, 1.22638]
+    wpdict = {
+        'D65':[0.95047, 1, 1.08883],
+        'A':[1.0985, 1, 0.35585],
+        'C':[0.98074, 1, 1.18232],
+        'D50':[0.96422, 1, 0.82521],
+        'D55':[0.95682, 1, 0.92149],
+        'D75':[0.94972, 1, 1.22638],
+    }
 
     def colorpy_mat(xy, wp):
         '''
@@ -153,23 +158,14 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
             phosphor_blue  * intensities [2]))
 
         return specical_to_xyz_matrix
+        
 
-
-    # 换成下面的写法可以简洁很多，也更容易加入白点的转换
-    if input_gamut == 'srgb': #srgb与rec.709色域相同，这里用srgb指代
-        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], w_D65))
-        img = cs_convert('srgb', 'xyz', img, clip=False)
-        img = vector_dot(mat, img)
-    elif out_gamut == 'srgb':
-        mat = colorpy_mat(gxydict[input_gamut], w_D65)
-        img = vector_dot(mat, img)
-        img = cs_convert('xyz', 'srgb', img, clip=False)
-    elif input_gamut == out_gamut:
-        pass
+    if in_gamut == out_gamut and in_wp == out_wp:
+        return img
     else:
-        mat = colorpy_mat(gxydict[input_gamut], w_D65)
+        mat = colorpy_mat(gxydict[in_gamut], wpdict[in_wp])
         img = vector_dot(mat, img)
-        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], w_D65))
+        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], wpdict[out_wp]))
         img = vector_dot(mat, img)
 
 
@@ -214,6 +210,7 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
 
 if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
     # img_in = colour.read_image('test_img/lena_std.tif')
+    # img_in = colour.read_image('test_img/fruits.tif')
     img_in = colour.read_image('test_img/Alexa.jpg')
     # img_in = colour.read_image('test_img/s-log.tif')
     # img_in = colour.read_image('HALD_36.png')
@@ -228,11 +225,14 @@ if __name__ == '__main__': #如果不用这个，导包的时候下面的语句�
     # img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
 
     img_out = gamut_convert('alexawg', 'srgb', img_in)
-    img_out = gamma_convert(img_out, 'rec709', 1)
+    img_out = gamma_convert(img_out, 'srgb', 'rec709')
 
     # img_out = gamma_convert(img_in, input_gamma='logc', output_gamma='rec709')
 
     # img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
+
+    # img_out = gamut_convert('srgb', 'srgb', img_in, True, 'D65', 'D50')
+    # img_out = gamma_convert(img_out, 1, 'rec709')
 
 
     colour.write_image(img_out, 'test_img/output.png')
