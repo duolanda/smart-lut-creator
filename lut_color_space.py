@@ -105,12 +105,18 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
     return img_out
 
 def gamut_convert(input_gamut, out_gamut, img, norm=True):
-    #Sony S-Gamut/S-Gamut3
-    sgamut_xy = [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]] # 这里的是小写 x,y 顺序为 RGB
-    #Sony S-Gamut.Cine
-    sgamutcine_xy = [[0.766, 0.275], [0.225, 0.8], [0.089, -0.087]] 
-    #ALEXA Wide Gamut RGB
-    alexawg_xy = [[0.6840, 0.3130], [0.2210, 0.8480], [0.0861, -0.1020]]
+    '''
+    色域转换函数，input_gamut 和 out_gamut 为字符串
+    '''
+    #存储不同色欲 RGB 的 xy 坐标值的字典
+    gxydict = {
+        #Sony S-Gamut/S-Gamut3
+        'sgamut': [[0.73, 0.28], [0.14, 0.855], [0.1, -0.05]], # 这里的是小写 x,y 顺序为 RGB
+        #Sony S-Gamut.Cine
+        'sgamutcine': [[0.766, 0.275], [0.225, 0.8], [0.089, -0.087]],
+        #ALEXA Wide Gamut RGB
+        'alexawg':[[0.6840, 0.3130], [0.2210, 0.8480], [0.0861, -0.1020]],
+    }
 
     #cie 1931
     w_D65 = [0.95047, 1, 1.08883]
@@ -148,45 +154,24 @@ def gamut_convert(input_gamut, out_gamut, img, norm=True):
 
         return specical_to_xyz_matrix
 
-    if input_gamut == 'srgb' and out_gamut == 'sgamut': #srgb与rec.709色域相同，这里用srgb指代
-        mat = np.linalg.inv(colorpy_mat(sgamut_xy, w_D65))
-        img = cs_convert('srgb', 'xyz', img, clip=False)
-        img = vector_dot(mat, img)
 
-    elif input_gamut == 'sgamut' and out_gamut == 'srgb':
-        mat = colorpy_mat(sgamut_xy, w_D65)
-        img = vector_dot(mat, img)
-        img = cs_convert('xyz', 'srgb', img, clip=False)
-
-    elif input_gamut == 'srgb' and out_gamut == 'alexawg': 
-        mat = np.linalg.inv(colorpy_mat(alexawg_xy, w_D65))
-        img = cs_convert('srgb', 'xyz', img, clip=False)
-        img = vector_dot(mat, img)
-
-    elif input_gamut == 'alexawg' and out_gamut == 'srgb':
-        mat = colorpy_mat(alexawg_xy, w_D65)
-        img = vector_dot(mat, img)
-        img = cs_convert('xyz', 'srgb', img, clip=False)
-
-    elif input_gamut == out_gamut:
-        pass
-
-    '''
-    换成下面的写法可以简洁很多，也更容易加入白点的转换
-    if input_gamut == 'srgb':
-        mat = np.linalg.inv(colorpy_mat(out_gamut, w_D65))
+    # 换成下面的写法可以简洁很多，也更容易加入白点的转换
+    if input_gamut == 'srgb': #srgb与rec.709色域相同，这里用srgb指代
+        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], w_D65))
         img = cs_convert('srgb', 'xyz', img, clip=False)
         img = vector_dot(mat, img)
     elif out_gamut == 'srgb':
-        mat = colorpy_mat(input_gamut, w_D65)
+        mat = colorpy_mat(gxydict[input_gamut], w_D65)
         img = vector_dot(mat, img)
         img = cs_convert('xyz', 'srgb', img, clip=False)
+    elif input_gamut == out_gamut:
+        pass
     else:
-        mat = colorpy_mat(input_gamut, w_D65)
+        mat = colorpy_mat(gxydict[input_gamut], w_D65)
         img = vector_dot(mat, img)
-        mat = np.linalg.inv(colorpy_mat(out_gamut, w_D65))
+        mat = np.linalg.inv(colorpy_mat(gxydict[out_gamut], w_D65))
         img = vector_dot(mat, img)
-    '''
+
 
     if norm:
         img = img/np.max(img)
@@ -222,9 +207,7 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
         img = img ** (1/output_gamma)
 
     if clip:
-        img[img>1] = 1
-        img[img<0] = 0
-        # 可以用 np.clip 替代
+        np.clip(img, 0, 1)
 
     return img
 
