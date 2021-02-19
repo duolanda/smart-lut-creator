@@ -21,10 +21,11 @@ from MySignal import mysgn
 
 import colour
 import numpy as np
+import time
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import gamma_convert, gamut_convert
-from lut_compute import compute_lut
-from lut_preview import apply_lut
+from lut_compute import compute_lut_np
+from lut_preview import apply_lut_np
 
 
 class LutUI():
@@ -98,6 +99,8 @@ class LutUI():
 
         self.hald_img = colour.read_image('HALD_36.png')
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
+
+
 
 
 
@@ -295,10 +298,8 @@ class LutUI():
         完成一级校色
         '''
         global enhence_list
-        img_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+        self.hald_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
 
-        colour.write_image(img_out,'HALD_out.png')
-        compute_lut('', 36, 'temp.cube', 'out')
         self.show_img()
 
 
@@ -307,6 +308,9 @@ class LutUI():
         '''
         完成色域/白点/gamma 相关转换
         '''
+
+        print(time.time())
+
         in_gamut = self.ui.inGamut.currentText()
         out_gamut = self.ui.outGamut.currentText()
 
@@ -318,10 +322,8 @@ class LutUI():
 
         #等处理好了其它的再把 XYZ、HSV 这些加进来
         img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, True, in_wp, out_wp)
-        img_out = gamma_convert(img_out, in_gamma, out_gamma)
+        self.hald_out = gamma_convert(img_out, in_gamma, out_gamma)
 
-        colour.write_image(img_out,'HALD_out.png')
-        compute_lut('', 36, 'temp.cube', 'out')
         self.show_img()
 
     def show_img(self):
@@ -329,11 +331,18 @@ class LutUI():
         将处理后的图片显示到 UI 上
         '''
         global img_float
-        img_out = apply_lut('temp.cube', img_float)
+
+        lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
+        
+        img_out = apply_lut_np(lut, img_float)
+
 
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
+
+        print(time.time())
+
 
 
     def reset_all(self):

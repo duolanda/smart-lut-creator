@@ -83,19 +83,19 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
         instance.name = name
     return instance
 
-def apply_lut(lut_file, img_file, save=False):
+def apply_lut(lut_file, img_file):
     lut = LUT.FromCubeFile(lut_file)
     lut = load_lut(lut)
 
-    if isinstance(img_file, str): #判断是否为字符串，不是字符串的话就当是numpy矩阵
-        img = Image.open(img_file)
-    else:
-        img = Image.fromarray(np.uint8(img_file*255))
+    img = Image.open(img_file)
+    img.filter(lut).save('PILTest.bmp')
+        
 
-    if save:
-        img.filter(lut).save('PILTest.bmp')
-    else:
-        return np.array(img.filter(lut))
+def apply_lut_np(lut, img):
+    lut = load_lut(lut)
+    img = Image.fromarray(np.uint8(img*255))
+    return np.array(img.filter(lut))
+
 
 if __name__ == '__main__':
     lut_file = 'test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube'

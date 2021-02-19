@@ -24,9 +24,9 @@ def compute_lut(hald_path, lut_size, out_path, name=None):
     colors = []
     pixels = image.getdata()
     for pixel in pixels:
-        r = pixel[0]
-        g = pixel[1]
-        b = pixel[2]
+        r = pixel[0]/255
+        g = pixel[1]/255
+        b = pixel[2]/255
         color = (r,g,b)
         colors.append(color)
     out_lut = LUT.FromCompute(lut_size, colors)
@@ -34,6 +34,27 @@ def compute_lut(hald_path, lut_size, out_path, name=None):
 
     return (lut)
 
+def compute_lut_np(hald_img_pixel, lut_size, name=None):
+    """
+    与 compute_lut 的区别在于不再读写文件，而是直接处理内存中的 numpy 矩阵
+    输入为(w*h, 3) 的图片矩阵
+    """
+
+    if name == None:
+        name = str(lut_size)
+
+    lut = LutM(lut_size)
+
+    colors = []
+    pixels = hald_img_pixel
+    for pixel in pixels:
+        r = pixel[0]
+        g = pixel[1]
+        b = pixel[2]
+        color = (r,g,b)
+        colors.append(color)
+    out_lut = LUT.FromCompute(lut_size, colors)
+    return out_lut
 
 if __name__ == '__main__':
     path = ''
