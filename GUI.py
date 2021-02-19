@@ -199,7 +199,7 @@ class LutUI():
         value = self.ui.brightnessSlider.value()/100
         self.ui.brightnessLineEdit.setText(str(value))
         enhence_list[0] = value
-        self.update_img()
+        self.color_enhence()
 
     def contrast_edit(self, line= False):
         '''
@@ -212,7 +212,7 @@ class LutUI():
         value = self.ui.contrastSlider.value()/100
         self.ui.contrastLineEdit.setText(str(value))
         enhence_list[1] = value
-        self.update_img()
+        self.color_enhence()
         
     def exposure_edit(self, line= False):
         '''
@@ -225,7 +225,7 @@ class LutUI():
         value = self.ui.exposureSlider.value()/100
         self.ui.exposureLineEdit.setText(str(value))
         enhence_list[2] = value
-        self.update_img()
+        self.color_enhence()
 
     def saturation_edit(self, line= False):
         '''
@@ -238,7 +238,7 @@ class LutUI():
         value = self.ui.saturationSlider.value()/100
         self.ui.saturationLineEdit.setText(str(value))
         enhence_list[3] = value
-        self.update_img()
+        self.color_enhence()
 
     def vibrance_edit(self, line= False):
         '''
@@ -251,7 +251,7 @@ class LutUI():
         value = self.ui.vibranceSlider.value()/100
         self.ui.vibranceLineEdit.setText(str(value))
         enhence_list[4] = value
-        self.update_img()
+        self.color_enhence()
 
     def warmth_edit(self, line= False):
         '''
@@ -264,7 +264,7 @@ class LutUI():
         value = self.ui.warmthSlider.value()/100
         self.ui.warmthLineEdit.setText(str(value))
         enhence_list[5] = value
-        self.update_img()
+        self.color_enhence()
 
     def tint_edit(self, line= False):
         '''
@@ -277,23 +277,16 @@ class LutUI():
         value = self.ui.tintSlider.value()/100
         self.ui.tintLineEdit.setText(str(value))
         enhence_list[6] = value
-        self.update_img()
+        self.color_enhence()
 
-    def update_img(self):
+    def color_enhence(self):
         '''
-        将处理后的图片显示到 UI 上
+        完成一级校色
         '''
         global img_float, enhence_list
         img_out = rgb_color_enhance(img_float, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
         img_out = (img_out*255).astype(np.uint8)
         self.show_img(img_out)
-
-        
-
-    def show_img(self, img_out):
-        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
-        pix = QPixmap.fromImage(frame)
-        self.item.setPixmap(pix) 
 
 
     def convert_cs(self):
@@ -317,6 +310,16 @@ class LutUI():
         img_out = (img_out*255).astype(np.uint8)
 
         self.show_img(img_out)
+
+
+    def show_img(self, img_out):
+        '''
+        将处理后的图片显示到 UI 上
+        '''
+        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item.setPixmap(pix) 
+
 
     def reset_all(self):
         '''
