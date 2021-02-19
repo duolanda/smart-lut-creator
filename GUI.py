@@ -23,9 +23,13 @@ import colour
 import numpy as np
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import gamma_convert, gamut_convert
+from lut_compute import compute_lut
+from lut_preview import apply_lut
+
 
 class LutUI():
     def __init__(self):
+
         qfile_gui = QFile("Smart LUT Creator.ui")
         qfile_gui.open(QFile.ReadOnly)
         qfile_gui.close()
@@ -91,6 +95,12 @@ class LutUI():
         self.ui.warmthLineEdit.textChanged.connect(lambda: self.warmth_edit(True))
         self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
+
+        self.hald_img = colour.read_image('HALD_36.png')
+        self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
+
+
+
         
 
     def init_color_enhence(self):
@@ -147,13 +157,14 @@ class LutUI():
 
         
 
-    def open_img(self, file_name):
+    def open_img(self, file_name, reset = True):
         '''
         输入图像
         '''
         global img_float
 
-        self.reset_all() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
+        if reset:
+            self.reset_all() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
 
 
         img_float = colour.read_image(file_name)
@@ -283,17 +294,19 @@ class LutUI():
         '''
         完成一级校色
         '''
-        global img_float, enhence_list
-        img_out = rgb_color_enhance(img_float, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
-        img_out = (img_out*255).astype(np.uint8)
-        self.show_img(img_out)
+        global enhence_list
+        img_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+
+        colour.write_image(img_out,'HALD_out.png')
+        compute_lut('', 36, 'temp.cube', 'out')
+        self.show_img()
+
 
 
     def convert_cs(self):
         '''
         完成色域/白点/gamma 相关转换
         '''
-        global img_float
         in_gamut = self.ui.inGamut.currentText()
         out_gamut = self.ui.outGamut.currentText()
 
@@ -304,18 +317,20 @@ class LutUI():
         out_wp = self.ui.outWp.currentText()
 
         #等处理好了其它的再把 XYZ、HSV 这些加进来
-        img_out = gamut_convert(in_gamut, out_gamut, img_float, True, in_wp, out_wp)
+        img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, True, in_wp, out_wp)
         img_out = gamma_convert(img_out, in_gamma, out_gamma)
 
-        img_out = (img_out*255).astype(np.uint8)
+        colour.write_image(img_out,'HALD_out.png')
+        compute_lut('', 36, 'temp.cube', 'out')
+        self.show_img()
 
-        self.show_img(img_out)
-
-
-    def show_img(self, img_out):
+    def show_img(self):
         '''
         将处理后的图片显示到 UI 上
         '''
+        global img_float
+        img_out = apply_lut('temp.cube', img_float)
+
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
