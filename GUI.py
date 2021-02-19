@@ -349,24 +349,22 @@ class LutUI():
         '''
         复位各个参数
         '''
-        self.init_color_enhence()
+        self.ui.brightnessSlider.setValue(0)
+        self.ui.contrastSlider.setValue(0)
+        self.ui.exposureSlider.setValue(0)
+        self.ui.saturationSlider.setValue(0)
+        self.ui.vibranceSlider.setValue(0)
+        self.ui.warmthSlider.setValue(0)
+        self.ui.tintSlider.setValue(0)
 
-        gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut']
-        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800']
-        wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D75']
-        self.ui.inGamut.clear()
-        self.ui.inGamma.clear()
-        self.ui.inWp.clear()
-        self.ui.outGamut.clear()
-        self.ui.outGamma.clear()
-        self.ui.outWp.clear()
+        self.ui.inGamut.setCurrentIndex(0)
+        self.ui.inGamma.setCurrentIndex(0)
+        self.ui.inWp.setCurrentIndex(0)
+        self.ui.outGamut.setCurrentIndex(0)
+        self.ui.outGamma.setCurrentIndex(0)
+        self.ui.outWp.setCurrentIndex(0)
 
-        self.ui.inGamut.addItems(gamut_list)
-        self.ui.inGamma.addItems(gamma_list)
-        self.ui.inWp.addItems(wp_list)
-        self.ui.outGamut.addItems(gamut_list)
-        self.ui.outGamma.addItems(gamma_list)
-        self.ui.outWp.addItems(wp_list)
+        
 
 app = QApplication([])
 app.setStyle('WindowsVista')
