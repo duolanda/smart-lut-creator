@@ -13,7 +13,7 @@ This application failed to start because no Qt platform plugin could be initiali
 
 from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, Qt
+from PySide6.QtCore import QFile, Qt, QEvent, QObject
 from PySide6.QtGui import QImage, QPixmap
 from MyWidget import  myQGraphicsView
 from MySignal import mysgn
@@ -29,8 +29,10 @@ from lut_compute import compute_lut_np
 from lut_preview import apply_lut_np
 
 
-class LutUI():
+class LutUI(QObject):
     def __init__(self):
+        
+        super(LutUI, self).__init__()
 
         qfile_gui = QFile("Smart LUT Creator.ui")
         qfile_gui.open(QFile.ReadOnly)
@@ -39,6 +41,11 @@ class LutUI():
         loader = QUiLoader()
         loader.registerCustomWidget(myQGraphicsView)
         self.ui = loader.load(qfile_gui)
+        self.ui.installEventFilter(self)
+        self.ui.graphicsView.viewport().installEventFilter(self)
+
+
+        self.ui.graphicsView.resize(654, 525) #resize事件一开始获得的大小不对，手动设一下
 
         self.sgn = mysgn
         self.sgn.drop_img.connect(self.open_img)
@@ -189,7 +196,7 @@ class LutUI():
         img_float = colour.read_image(file_name)
         img = (img_float*255).astype(np.uint8)
         self.preview = img
-        self.zoomscale=1                                                      
+        self.zoomscale=1  
 
         frame = QImage(img, img.shape[1], img.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
@@ -198,6 +205,8 @@ class LutUI():
         self.scene.addItem(self.item)
         # self.ui.graphicsView = myQGraphicsView()
         self.ui.graphicsView.setScene(self.scene) #将场景添加至视图
+
+        self.adjust_zoom_size()                                                    
 
     def zoomin(self):
         """
@@ -217,16 +226,72 @@ class LutUI():
             self.zoomscale=5
         self.item.setScale(self.zoomscale) 
 
-    # def resizeEvent(self, event):
-    #     '''
-    #     根据窗口的大小来自适应调整图像大小
-    #     死活不识别事件，暂且搁置
-    #     '''
-    #     global img_float
-    #     print(123)
-    #     view_size = self.ui.graphicsView.size()
-    #     img_w, img_h = img_float.shape[1], img_float.shape[0]
 
+    def eventFilter(self, obj, event):
+        '''
+        处理不同事件
+        '''
+        # return 那里会报错，原因不明。QObject 和 super(LutUI, self).__init__() 也是为了处理事件才加上的
+        if obj is self.ui:
+            if event.type() == QEvent.Resize:
+                self.adjust_zoom_size()
+
+
+        if obj is self.ui.graphicsView.viewport():
+            if event.type() == QEvent.MouseMove:
+                if self.left_click:
+                    self._endPos = event.pos() - self._startPos
+                    move_x = self.scene.sceneRect().x() + self._endPos.x()
+                    move_y = self.scene.sceneRect().y() + self._endPos.y()
+                    self._startPos = event.pos()
+                    # self.scene.setSceneRect(move_x, move_y, self.scene.sceneRect().width(), self.scene.sceneRect().height()) #以原点为中心移动
+                    self.item.setPos(self.item.pos() + self._endPos)
+
+            if event.type() == QEvent.MouseButtonPress:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    self.left_click = True
+                    self._startPos = event.pos()
+
+            if event.type() == QEvent.MouseButtonRelease:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    self.left_click = False
+
+            if event.type() == QEvent.Wheel:
+                #为了以鼠标为中心进行缩放，就需要先缩放，再按照比例进行平移
+                self.zoomscale=self.zoomscale+event.angleDelta().y()/1000
+                if self.zoomscale<=0:
+                    self.zoomscale=0.2
+                if self.zoomscale>=5:
+                    self.zoomscale=5
+                self.item.setScale(self.zoomscale) 
+
+                delta = event.scenePosition() - self.item.pos()  # 鼠标位置与图元左上角的差值
+                ratio = self.zoomscale/(self.zoomscale-event.angleDelta().y()/1000)-1 # 对应缩放比例
+                offset = delta * ratio
+                self.item.setPos(self.item.pos() - offset)
+                
+        return super(LutUI, self).eventFilter(obj, event)
+
+        
+
+
+    def adjust_zoom_size(self):
+        '''
+        根据窗口的大小来自适应调整图像大小
+        '''
+        view_size = self.ui.graphicsView.size()
+        view_w, view_h = view_size.width()-20, view_size.height()-20 #留出20像素滚动条
+        img_w, img_h = img_float.shape[1], img_float.shape[0]
+        zoomscale_w = view_w/img_w
+        zoomscale_h = view_h/img_h
+        if zoomscale_w < zoomscale_h:
+            self.item.setScale(zoomscale_w) 
+            self.zoomscale = zoomscale_w
+        else:
+            self.item.setScale(zoomscale_h) 
+            self.zoomscale = zoomscale_h
+
+        self.scene.setSceneRect(0, 0, img_w*zoomscale_w, img_h*zoomscale_h)
 
     def brightness_edit(self, line= False):
         '''
