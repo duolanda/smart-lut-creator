@@ -11,7 +11,7 @@ qt.qpa.plugin: Could not find the Qt platform plugin "windows" in ""
 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
 '''
 
-from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem
+from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QImage, QPixmap
@@ -22,6 +22,7 @@ from MySignal import mysgn
 import colour
 import numpy as np
 import time
+from lut import LUT
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import gamma_convert, gamut_convert
 from lut_compute import compute_lut_np
@@ -97,16 +98,22 @@ class LutUI():
         self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
         #上面的一排按钮
+        self.ui.openLutButton.clicked.connect(self.read_lut)
+        self.ui.saveLutButton.clicked.connect(self.save_lut)
+        self.ui.exportLutButton.clicked.connect(self.export_lut)
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
 
 
 
         self.hald_img = colour.read_image('HALD_36.png')
-        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36)
         self.preview = None
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
         self.img_name = '未命名'
+
+        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36)
+        self.lut_path = None
+
 
 
 
@@ -161,7 +168,7 @@ class LutUI():
         '''
         打开图像选择窗口
         '''
-        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
 
         file_path = openfile_name[0][0]
         self.open_img(file_path)
@@ -320,6 +327,7 @@ class LutUI():
         '''
         global enhence_list
         self.hald_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+        self.lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
 
         self.show_img()
 
@@ -344,6 +352,7 @@ class LutUI():
         #等处理好了其它的再把 XYZ、HSV 这些加进来
         img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, True, in_wp, out_wp)
         self.hald_out = gamma_convert(img_out, in_gamma, out_gamma)
+        self.lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
 
         self.show_img()
 
@@ -352,8 +361,6 @@ class LutUI():
         将处理后的图片显示到 UI 上
         '''
         global img_float
-
-        self.lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
         
         img_out = apply_lut_np(self.lut, img_float)
         self.preview = img_out
@@ -386,8 +393,54 @@ class LutUI():
         self.ui.outGamma.setCurrentIndex(0)
         self.ui.outWp.setCurrentIndex(0)
 
+    def read_lut(self):
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)') #.代表是当前目录
+        file_path = openfile_name[0][0]
+        self.lut_path = file_path
+        ext_name = file_path.split('/')[-1].split('.')[-1].lower() #扩展名，最后统一转成小写
+
+        #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
+        if ext_name == 'cube':
+            self.lut = LUT.FromCubeFile(file_path)
+            self.show_img()
+        elif ext_name == '3dl':
+            self.lut = LUT.FromLustre3DLFile(file_path)
+            self.show_img()
+    #    elif ext_name == '3dl':
+    #         self.lut = LUT.FromNuke3DLFile(file_path)
+        else:
+            QMessageBox.information(self.ui,"抱歉","尚不支持该格式",QMessageBox.Ok,QMessageBox.Ok)
+
+
+    def save_lut(self):
+        if self.lut_path:
+            #如果有路径说明是已经存在的 lut 文件，直接覆盖保存
+            self.export_lut(self.lut_path)
+        else:
+            #没有路径直接调用另存为
+            self.export_lut()
+
+    def export_lut(self, path=None):
+        if path:
+            save_path = path
+        else:
+            save_path = QFileDialog.getSaveFileName(self.ui, '导出当前 LUT', './'+self.lut.name+'.cube', 'Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)')
+            save_path = save_path[0]
+            self.lut_path = save_path
+
+        ext_name = save_path.split('/')[-1].split('.')[-1].lower() 
+
+        #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
+        #而且 3dl 文件对尺寸有要求，也没有做相应的转换
+        if ext_name == 'cube':
+            LUT.ToCubeFile(self.lut, save_path)
+        elif ext_name == '3dl':
+            LUT.ToLustre3DLFile(self.lut, save_path)
+        # elif ext_name == '3dl':
+        #     LUT.ToNuke3DLFile(self.lut, save_path)
+
     def export_img(self):
-        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+' 已转换.jpg', 'jpg(*.jpg);;png(*.png);;tiff(*.tiff);;bmp(*.bmp)')
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.jpg', 'jpg(*.jpg);;png(*.png);;tiff(*.tiff);;bmp(*.bmp)')
         colour.write_image(self.preview, save_path[0])
 
 

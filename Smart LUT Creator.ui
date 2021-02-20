@@ -34,14 +34,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="saveButton">
+         <widget class="QPushButton" name="saveLutButton">
           <property name="text">
            <string>保存 LUT</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="exportButton">
+         <widget class="QPushButton" name="exportLutButton">
           <property name="text">
            <string>导出 LUT</string>
           </property>
