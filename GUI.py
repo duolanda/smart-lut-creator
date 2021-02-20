@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxL
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QEvent, QObject
 from PySide6.QtGui import QImage, QPixmap
-from MyWidget import  myQGraphicsView
+from MyWidget import myQGraphicsView
 from MySignal import mysgn
 
 
@@ -415,7 +415,8 @@ class LutUI(QObject):
         out_wp = self.ui.outWp.currentText()
 
         #等处理好了其它的再把 XYZ、HSV 这些加进来
-        img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, True, in_wp, out_wp)
+        img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, False, True, in_wp, out_wp)
+        img_out = np.clip(img_out, 0, 1)
         self.hald_out = gamma_convert(img_out, in_gamma, out_gamma)
         self.lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
 

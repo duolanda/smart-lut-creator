@@ -103,7 +103,7 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
 
     return img_out
 
-def gamut_convert(in_gamut, out_gamut, img, norm=True, in_wp='D65', out_wp='D65'):
+def gamut_convert(in_gamut, out_gamut, img, norm=True, clip=True, in_wp='D65', out_wp='D65'):
     '''
     色域转换函数，
     - in_gamut 和 out_gamut 为字符串
@@ -167,6 +167,10 @@ def gamut_convert(in_gamut, out_gamut, img, norm=True, in_wp='D65', out_wp='D65'
     if norm:
         img = img/np.max(img)
         img[img<0] = 0
+
+    if clip:
+        img = np.clip(img, 0, 1)
+
     
     return img
 
