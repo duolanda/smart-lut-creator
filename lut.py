@@ -135,10 +135,15 @@ class Color:
 		return str(Remap01ToInt(self.r, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.g, maxVal)).rjust(rjustValue) + " " + str(Remap01ToInt(self.b, maxVal)).rjust(rjustValue)
 
 class LUT:
-	def __init__(self, lattice, name = "Untitled LUT"):
+	def __init__(self, lattice, name = "Untitled LUT", lattice_np = None):
 		self.lattice = lattice
 		self.cubeSize = self.lattice.shape[0]
 		self.name = str(name)
+
+		if type(lattice_np) is np.ndarray:
+			self.lattice_np = lattice_np
+		else:
+			self.lattice_np = self.lut_to_numpy(True)
 	
 	def _LatticeTo3DLString(self, bitdepth):
 			"""
@@ -182,7 +187,7 @@ class LUT:
 				for r in range(cubeSize):
 					HALD_lattice = HALD_data[b*cubeSize*cubeSize+g*cubeSize+r]
 					HALDLattice[r, g, b] = Color(HALD_lattice[0], HALD_lattice[1], HALD_lattice[2])
-		return LUT(HALDLattice, name = "HALD"+str(cubeSize))	
+		return LUT(HALDLattice, name = "HALD"+str(cubeSize), lattice_np = np.array(HALD_data))	
 
 	@staticmethod
 	def FromLustre3DLFile(lutFilePath):
@@ -448,6 +453,30 @@ class LUT:
 					selfColor = self.lattice[x, y, z].Clamped01()
 					newLattice[x, y, z] = otherLUT.ColorFromColor(selfColor)
 		return LUT(newLattice, name = self.name + "+" + otherLUT.name)
+
+
+	def lut_to_numpy(self, bgr = False):
+		lattice  = self.lattice
+		size = self.cubeSize
+
+		lut_np = np.zeros((size, size, size, 3))
+
+		#适应不同应用的需要，这里的“bgr”并非是理解上的“bgr”，准确的说更像是描述是否符合lut的映射关系，即table[r][g][b]对应值还是table[b][g][r]对应值，一个便于表示映射，一个便于表示lut文件读写
+		if bgr:
+			for i in range(size):
+				for j in range(size):
+					for k in range(size):
+						p = lattice[i][j][k]
+						lut_np[i][j][k] = [p.b, p.g, p.r] 
+		else:
+			for i in range(size):
+				for j in range(size):
+					for k in range(size):
+						p = lattice[i][j][k]
+						lut_np[i][j][k] = [p.r, p.g, p.b] 
+
+		self.lattice_np = lut_np
+		return lut_np
 
 
 	# 反求 lut 相关

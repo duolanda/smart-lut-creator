@@ -5,8 +5,6 @@ from itertools import chain
 import numpy as np
 
 from lut import LUT
-from lut_IO import lut_to_numpy
-
 
 
 def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
@@ -74,7 +72,7 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     name = lut.name
     channels = 3
 
-    table = lut_to_numpy(lut, True) #用“bgr”
+    table = lut.lattice_np #用“bgr”
     table = table.flatten()
 
     instance = cls(size, table, channels=channels,

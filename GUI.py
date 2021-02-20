@@ -200,6 +200,17 @@ class LutUI():
             self.zoomscale=5
         self.item.setScale(self.zoomscale) 
 
+    # def resizeEvent(self, event):
+    #     '''
+    #     根据窗口的大小来自适应调整图像大小
+    #     死活不识别事件，暂且搁置
+    #     '''
+    #     global img_float
+    #     print(123)
+    #     view_size = self.ui.graphicsView.size()
+    #     img_w, img_h = img_float.shape[1], img_float.shape[0]
+
+
     def brightness_edit(self, line= False):
         '''
         调整亮度
