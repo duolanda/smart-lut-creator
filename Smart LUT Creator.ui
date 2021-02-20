@@ -14,9 +14,55 @@
    <string>Smart LUT Creator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1">
+   <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,1">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QPushButton" name="addButton">
+          <property name="text">
+           <string>新建 LUT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="openLutButton">
+          <property name="text">
+           <string>打开 LUT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="saveButton">
+          <property name="text">
+           <string>保存 LUT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="exportButton">
+          <property name="text">
+           <string>导出 LUT</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="openImgButton">
+          <property name="text">
+           <string>更换预览图</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="exportImgButton">
+          <property name="text">
+           <string>导出当前预览</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item>
        <widget class="myQGraphicsView" name="graphicsView"/>
       </item>

@@ -96,9 +96,17 @@ class LutUI():
         self.ui.warmthLineEdit.textChanged.connect(lambda: self.warmth_edit(True))
         self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
+        #上面的一排按钮
+        self.ui.exportImgButton.clicked.connect(self.export_img)
+        self.ui.openImgButton.clicked.connect(self.img_window)
+
+
 
         self.hald_img = colour.read_image('HALD_36.png')
+        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36)
+        self.preview = None
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
+        self.img_name = '未命名'
 
 
 
@@ -155,8 +163,9 @@ class LutUI():
         '''
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
 
-        file_name = openfile_name[0][0]
-        self.open_img(file_name)
+        file_path = openfile_name[0][0]
+        self.open_img(file_path)
+        self.img_name = file_path.split('/')[-1][0:-4] #[0:-4]去扩展名
 
         
 
@@ -172,6 +181,7 @@ class LutUI():
 
         img_float = colour.read_image(file_name)
         img = (img_float*255).astype(np.uint8)
+        self.preview = img
         self.zoomscale=1                                                      
 
         frame = QImage(img, img.shape[1], img.shape[0], QImage.Format_RGB888)
@@ -343,9 +353,10 @@ class LutUI():
         '''
         global img_float
 
-        lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
+        self.lut = compute_lut_np(self.hald_out.reshape(36**3, 3), 36)
         
-        img_out = apply_lut_np(lut, img_float)
+        img_out = apply_lut_np(self.lut, img_float)
+        self.preview = img_out
 
 
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
@@ -375,7 +386,10 @@ class LutUI():
         self.ui.outGamma.setCurrentIndex(0)
         self.ui.outWp.setCurrentIndex(0)
 
-        
+    def export_img(self):
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+' 已转换.jpg', 'jpg(*.jpg);;png(*.png);;tiff(*.tiff);;bmp(*.bmp)')
+        colour.write_image(self.preview, save_path[0])
+
 
 app = QApplication([])
 app.setStyle('WindowsVista')
