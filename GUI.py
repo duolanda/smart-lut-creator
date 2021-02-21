@@ -11,10 +11,10 @@ qt.qpa.plugin: Could not find the Qt platform plugin "windows" in ""
 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
 '''
 
-from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox
+from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QInputDialog
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QEvent, QObject
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtGui import QImage, QPixmap, QIcon
 from MyWidget import myQGraphicsView
 from MySignal import mysgn
 
@@ -43,6 +43,7 @@ class LutUI(QObject):
         self.ui = loader.load(qfile_gui)
         self.ui.installEventFilter(self)
         self.ui.graphicsView.viewport().installEventFilter(self)
+        self.ui.setWindowIcon(QIcon("icon.png"))
 
 
         self.ui.graphicsView.resize(654, 525) #resize事件一开始获得的大小不对，手动设一下
@@ -105,11 +106,15 @@ class LutUI(QObject):
         self.ui.tintLineEdit.textChanged.connect(lambda: self.tint_edit(True))
 
         #上面的一排按钮
+        self.ui.addLutButton.clicked.connect(self.add_lut)
+        self.ui.openLutButton.clicked.connect(self.read_lut)
         self.ui.openLutButton.clicked.connect(self.read_lut)
         self.ui.saveLutButton.clicked.connect(self.save_lut)
         self.ui.exportLutButton.clicked.connect(self.export_lut)
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
+        self.ui.resizeLutButton.clicked.connect(self.resize_lut)
+
 
 
 
@@ -118,8 +123,10 @@ class LutUI(QObject):
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
         self.img_name = '未命名'
 
-        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36)
+        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36, '未命名')
         self.lut_path = None
+        self.ui.setWindowTitle("未命名"+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+
 
 
 
@@ -467,8 +474,20 @@ class LutUI(QObject):
         self.ui.outGamma.setCurrentIndex(0)
         self.ui.outWp.setCurrentIndex(0)
 
+    def add_lut(self):
+        value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小:", self.lut.cubeSize, 0, 128)
+        if ok:
+            self.hald_img = colour.read_image('HALD_36.png')
+            self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36)
+            self.lut_path = None
+            self.lut = self.lut.Resize(value)
+            self.lut.name = '未命名'
+            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
 
     def read_lut(self):
+        '''
+        打开外部 LUT
+        '''
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)') #.代表是当前目录
         if openfile_name[0] == []: 
             return
@@ -480,16 +499,24 @@ class LutUI(QObject):
         #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
         if ext_name == 'cube':
             self.lut = LUT.FromCubeFile(file_path)
-            self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
-            self.show_img()
+            self.load_lut()
+           
         elif ext_name == '3dl':
             self.lut = LUT.FromLustre3DLFile(file_path)
-            self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
-            self.show_img()
+            self.load_lut()
+
     #    elif ext_name == '3dl':
     #         self.lut = LUT.FromNuke3DLFile(file_path)
         else:
             QMessageBox.information(self.ui, "抱歉", "尚不支持该格式", QMessageBox.Ok, QMessageBox.Ok)
+
+    def load_lut(self):
+        '''
+        因为打开不同格式 lut 文件都会指向一些相同的操作，再单独用一个函数来处理
+        '''
+        self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
+        self.show_img()
+        self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
 
 
     def save_lut(self):
@@ -499,6 +526,7 @@ class LutUI(QObject):
         else:
             #没有路径直接调用另存为
             self.export_lut()
+
 
     def export_lut(self, path=None):
         if path:
@@ -522,12 +550,21 @@ class LutUI(QObject):
         # elif ext_name == '3dl':
         #     LUT.ToNuke3DLFile(self.lut, save_path)
 
+
     def export_img(self):
         save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.png', 'png(*.png);;jpg(*.jpg);;tif(*.tif *.tiff);;bmp(*.bmp)')
         if save_path[0] == '': 
             return
 
         colour.write_image(self.preview, save_path[0])
+
+    def resize_lut(self):
+        value, ok = QInputDialog.getInt(self.ui, "修改尺寸", "请输入修改后的 LUT 大小:", self.lut.cubeSize, 0, 128)
+        if ok:
+            self.lut = self.lut.Resize(value)
+            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+
+
 
 
 app = QApplication([])

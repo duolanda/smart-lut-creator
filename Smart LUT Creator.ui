@@ -20,7 +20,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QPushButton" name="addButton">
+         <widget class="QPushButton" name="addLutButton">
           <property name="text">
            <string>新建 LUT</string>
           </property>
@@ -58,6 +58,13 @@
          <widget class="QPushButton" name="exportImgButton">
           <property name="text">
            <string>导出当前预览</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="resizeLutButton">
+          <property name="text">
+           <string>修改尺寸</string>
           </property>
          </widget>
         </item>
