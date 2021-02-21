@@ -118,12 +118,12 @@ class LutUI(QObject):
 
 
 
-        self.hald_img = colour.read_image('HALD_36.png')
+        self.hald_img = generate_HALD_np(33)
         self.preview = None
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
         self.img_name = '未命名'
 
-        self.lut = compute_lut_np(self.hald_img.reshape(36**3, 3), 36, '未命名')
+        self.lut = compute_lut_np(self.hald_img, 33, '未命名')
         self.lut_path = None
         self.ui.setWindowTitle("未命名"+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
 
@@ -406,8 +406,8 @@ class LutUI(QObject):
         完成一级校色
         '''
         global enhence_list
-        self.hald_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
-        self.lut = compute_lut_np(self.hald_out, self.lut.cubeSize)
+        hald_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
 
         self.show_img()
 
@@ -432,8 +432,8 @@ class LutUI(QObject):
         #等处理好了其它的再把 XYZ、HSV 这些加进来
         img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, False, True, in_wp, out_wp)
         img_out = np.clip(img_out, 0, 1)
-        self.hald_out = gamma_convert(img_out, in_gamma, out_gamma)
-        self.lut = compute_lut_np(self.hald_out, self.lut.cubeSize)
+        hald_out = gamma_convert(img_out, in_gamma, out_gamma)
+        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
 
         self.show_img()
 
@@ -478,11 +478,8 @@ class LutUI(QObject):
     def add_lut(self):
         value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（0~128）:", self.lut.cubeSize, 2, 65)
         if ok and value != self.lut.cubeSize:
-            hald_size = int(np.ceil(value**0.5))**2 #取最接近且更大的平方数
-            self.hald_img = generate_HALD_np(hald_size)
-            self.lut = compute_lut_np(self.hald_img, hald_size)
-            # if hald_size != value: #因为后续操作都要在hald上处理，就算改了lut大小，hald还是那么大，就会对不上，暂时先不做处理了，等不经过hald直接操作lut时再说，resize_lut问题也是
-            #     self.lut = self.lut.Resize(value)
+            self.hald_img = generate_HALD_np(value)
+            self.lut = compute_lut_np(self.hald_img, value, '未命名')
             self.lut_path = None
             self.lut.name = '未命名'
             self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
@@ -519,10 +516,10 @@ class LutUI(QObject):
         '''
         因为打开不同格式 lut 文件都会指向一些相同的操作，再单独用一个函数来处理
         '''
-        #这里hald和lut尺寸也有脱节
-        self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
+        self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
         self.show_img()
         self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+        self.outlut = self.lut #为了resize时可以保留外部lut对hald的修改，单独存一下该lut
 
 
     def save_lut(self):
@@ -565,10 +562,12 @@ class LutUI(QObject):
         colour.write_image(self.preview, save_path[0])
 
     def resize_lut(self):
-        #注意，并没有改hald，就无法再修改色彩空间等了，所以这一步只能在最后做
         value, ok = QInputDialog.getInt(self.ui, "修改尺寸", "请输入修改后的 LUT 大小:", self.lut.cubeSize, 2, 65)
         if ok:
             self.lut = self.lut.Resize(value)
+            self.hald_img = generate_HALD_np(value)
+            if hasattr(self, 'outlut'): #如果导入过外部 lut 的话单独处理
+                self.hald_img = np.float64(apply_lut_np(self.outlut, self.hald_img)/255) 
             self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
             self.show_img()
 

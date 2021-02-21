@@ -176,18 +176,20 @@ class LUT:
 		return LUT(identityLattice, name = "Identity"+str(cubeSize))	
 
 	@staticmethod
-	def FromCompute(cubeSize, HALD_data):
+	def FromCompute(cubeSize, HALD_data, name=None):
 		'''
 		与 HALD 模块的生成 lut 部分对接
 		范围 0~1
 		'''
+		if name == None:
+			name = "HALD"+str(cubeSize)
 		HALDLattice = EmptyLatticeOfSize(cubeSize)
 		for b in range(cubeSize):
 			for g in range(cubeSize):
 				for r in range(cubeSize):
 					HALD_lattice = HALD_data[b*cubeSize*cubeSize+g*cubeSize+r]
 					HALDLattice[r, g, b] = Color(HALD_lattice[0], HALD_lattice[1], HALD_lattice[2])
-		return LUT(HALDLattice, name = "HALD"+str(cubeSize), lattice_np = np.array(HALD_data))	
+		return LUT(HALDLattice, name = name, lattice_np = np.array(HALD_data))	
 
 	@staticmethod
 	def FromLustre3DLFile(lutFilePath):

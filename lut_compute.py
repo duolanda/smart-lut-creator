@@ -53,11 +53,11 @@ def compute_lut_np(hald_img_pixel, lut_size, name=None):
         b = pixel[2]
         color = (r,g,b)
         colors.append(color)
-    out_lut = LUT.FromCompute(lut_size, colors)
+    out_lut = LUT.FromCompute(lut_size, colors, name)
     return out_lut
 
 if __name__ == '__main__':
     path = ''
-    lut_size = 36
+    lut_size = 33
     out_path = 'test_lut/smart_cube.cube'
     compute_lut(path, lut_size, out_path)

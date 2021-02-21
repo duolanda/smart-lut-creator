@@ -1,9 +1,9 @@
 import os
 from PIL import Image, ImageDraw
 from lut import LutM
-import math
 import numpy as np
 from constants import HALD_FILENAME
+
 
 '''
 faymontage/lut-maker: Generate 3D color LUTs in Adobe Cube and Pseudo-3D texture format
@@ -42,16 +42,12 @@ def generate_HALD_np(lut_size):
 
     lut = LutM(lut_size)
     colors = lut.generate_colors()
-    image = Image.new('RGB', (lut.image_size, lut.image_size), (0, 0, 0))
-    draw = ImageDraw.Draw(image)
+    image = np.zeros((1, lut.swatch_count, 3))
 
-    lookup_table = list(range(lut.swatch_count))
+    for i in range(len(image[0])):
+        image[0][i] = np.array(colors[i])
 
-    for i, color in enumerate(colors):
-        draw.rectangle(lut.cell_bounds(lookup_table[i]), fill=tuple(color))
-
-    hald_img = np.float64(np.array(image.getdata())/255)
-    hald_img = hald_img.reshape(image.height, image.width, 3)
+    hald_img = np.float64(image/255)
     return hald_img
 
 if __name__ == '__main__':
@@ -60,3 +56,5 @@ if __name__ == '__main__':
     # image_size = 512
     # name = 'lut'
     generate_HALD(lut_size, data_dir)
+    
+
