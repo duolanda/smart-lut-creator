@@ -105,7 +105,7 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
 
 def gamut_convert(in_gamut, out_gamut, img, norm=True, clip=True, in_wp='D65', out_wp='D65'):
     '''
-    色域转换函数，
+    色域和白点转换函数，
     - in_gamut 和 out_gamut 为字符串
     '''
     #存储不同色域 RGB 的 xy 坐标值的字典
@@ -175,6 +175,9 @@ def gamut_convert(in_gamut, out_gamut, img, norm=True, clip=True, in_wp='D65', o
     return img
 
 def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
+    '''
+    Gamma 转换函数
+    '''
     # 导入进来的图像默认根据推测是rec709，而不是linear，而所有变换公式都是针对linear的，所以如果不输入gamma就给2.2，但需要注意，rec709并非就是2.2，这里只是为了节省时间做的近似，肉眼不怎么看得出来差异
     if input_gamma == output_gamma:
         return img

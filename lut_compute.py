@@ -2,6 +2,7 @@ import os
 import json
 import math
 from PIL import Image
+import numpy as np
 
 from lut import LutM
 from lut import LUT
@@ -37,7 +38,6 @@ def compute_lut(hald_path, lut_size, out_path, name=None):
 def compute_lut_np(hald_img_pixel, lut_size, name=None):
     """
     与 compute_lut 的区别在于不再读写文件，而是直接处理内存中的 numpy 矩阵
-    输入为(w*h, 3) 的图片矩阵
     """
 
     if name == None:
@@ -46,7 +46,7 @@ def compute_lut_np(hald_img_pixel, lut_size, name=None):
     lut = LutM(lut_size)
 
     colors = []
-    pixels = hald_img_pixel
+    pixels = hald_img_pixel.reshape(lut_size**3, 3) #(w*h, 3) 的图片矩阵
     for pixel in pixels:
         r = pixel[0]
         g = pixel[1]
