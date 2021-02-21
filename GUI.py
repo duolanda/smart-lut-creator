@@ -505,7 +505,7 @@ class LutUI(QObject):
             save_path = QFileDialog.getSaveFileName(self.ui, '导出当前 LUT', './'+self.lut.name+'.cube', 'Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)')
             if save_path[0] == '': 
                 return
-                
+
             save_path = save_path[0]
             self.lut_path = save_path
 
@@ -521,7 +521,7 @@ class LutUI(QObject):
         #     LUT.ToNuke3DLFile(self.lut, save_path)
 
     def export_img(self):
-        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.jpg', 'jpg(*.jpg);;png(*.png);;tif(*.tif *.tiff);;bmp(*.bmp)')
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.png', 'png(*.png);;jpg(*.jpg);;tif(*.tif *.tiff);;bmp(*.bmp)')
         if save_path[0] == '': 
             return
 

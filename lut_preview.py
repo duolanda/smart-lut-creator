@@ -16,6 +16,8 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     :param cls: A class which handles the parsed file.
                 Default is ``ImageFilter.Color3DLUT``.
     """
+
+    # lines = 'gen_img/srgb to sgmaut lattice.cube'
     # name, size = None, None
     # channels = 3
     # file = None
@@ -96,6 +98,10 @@ def apply_lut_np(lut, img):
 
 
 if __name__ == '__main__':
-    lut_file = 'test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube'
-    img_file = 'test_img/Alexa.bmp'
-    apply_lut(lut_file, img_file, True)
+    # lut_file = 'test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube'
+    # img_file = 'test_img/Alexa.bmp'
+    # apply_lut(lut_file, img_file)
+
+    lut_file = 'gen_img/srgb to sgmaut lattice.cube'
+    img_file = 'test_img/fruits.tif '
+    apply_lut(lut_file, img_file)

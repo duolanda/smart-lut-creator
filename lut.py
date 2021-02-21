@@ -143,7 +143,7 @@ class LUT:
 		if type(lattice_np) is np.ndarray:
 			self.lattice_np = lattice_np
 		else:
-			self.lattice_np = self.lut_to_numpy(True)
+			self.lattice_np = self.lut_to_numpy(False)
 	
 	def _LatticeTo3DLString(self, bitdepth):
 			"""
@@ -466,13 +466,13 @@ class LUT:
 			for i in range(size):
 				for j in range(size):
 					for k in range(size):
-						p = lattice[i][j][k]
+						p = lattice[k][j][i] #注意，pylut对r、g、b索引的理解与cube文件顺序不同，所以这里是kji对ijk
 						lut_np[i][j][k] = [p.b, p.g, p.r] 
 		else:
 			for i in range(size):
 				for j in range(size):
 					for k in range(size):
-						p = lattice[i][j][k]
+						p = lattice[k][j][i]
 						lut_np[i][j][k] = [p.r, p.g, p.b] 
 
 		self.lattice_np = lut_np
