@@ -175,7 +175,7 @@ class LutUI(QObject):
         '''
         打开图像选择窗口
         '''
-        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.png *.tif *.bmp)") #.代表是当前目录
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
 
         file_path = openfile_name[0][0]
         self.open_img(file_path)
@@ -232,12 +232,19 @@ class LutUI(QObject):
         处理不同事件
         '''
         # return 那里会报错，原因不明。QObject 和 super(LutUI, self).__init__() 也是为了处理事件才加上的
+
         if obj is self.ui:
             if event.type() == QEvent.Resize:
                 self.adjust_zoom_size()
 
 
         if obj is self.ui.graphicsView.viewport():
+            print(event.type())
+
+            if event.type() == QEvent.DragMove: #Drop 捕获不到，先这样吧
+                path = event.mimeData().text().replace('file:///', '') # 删除多余开头
+                self.open_img(path)
+
             if event.type() == QEvent.MouseMove:
                 if self.left_click:
                     self._endPos = event.pos() - self._startPos
@@ -506,7 +513,7 @@ class LutUI(QObject):
         #     LUT.ToNuke3DLFile(self.lut, save_path)
 
     def export_img(self):
-        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.jpg', 'jpg(*.jpg);;png(*.png);;tiff(*.tiff);;bmp(*.bmp)')
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.jpg', 'jpg(*.jpg);;png(*.png);;tif(*.tif *.tiff);;bmp(*.bmp)')
         colour.write_image(self.preview, save_path[0])
 
 
