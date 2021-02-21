@@ -176,6 +176,8 @@ class LutUI(QObject):
         打开图像选择窗口
         '''
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
+        if openfile_name[0] == []: #如果用户什么也没选就什么也不做，不然下一步会报错
+            return
 
         file_path = openfile_name[0][0]
         self.open_img(file_path)
@@ -239,7 +241,6 @@ class LutUI(QObject):
 
 
         if obj is self.ui.graphicsView.viewport():
-            print(event.type())
 
             if event.type() == QEvent.DragMove: #Drop 捕获不到，先这样吧
                 path = event.mimeData().text().replace('file:///', '') # 删除多余开头
@@ -466,8 +467,12 @@ class LutUI(QObject):
         self.ui.outGamma.setCurrentIndex(0)
         self.ui.outWp.setCurrentIndex(0)
 
+
     def read_lut(self):
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)') #.代表是当前目录
+        if openfile_name[0] == []: 
+            return
+
         file_path = openfile_name[0][0]
         self.lut_path = file_path
         ext_name = file_path.split('/')[-1].split('.')[-1].lower() #扩展名，最后统一转成小写
@@ -498,6 +503,9 @@ class LutUI(QObject):
             save_path = path
         else:
             save_path = QFileDialog.getSaveFileName(self.ui, '导出当前 LUT', './'+self.lut.name+'.cube', 'Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)')
+            if save_path[0] == '': 
+                return
+                
             save_path = save_path[0]
             self.lut_path = save_path
 
@@ -514,6 +522,9 @@ class LutUI(QObject):
 
     def export_img(self):
         save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.jpg', 'jpg(*.jpg);;png(*.png);;tif(*.tif *.tiff);;bmp(*.bmp)')
+        if save_path[0] == '': 
+            return
+
         colour.write_image(self.preview, save_path[0])
 
 
