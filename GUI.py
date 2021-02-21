@@ -480,14 +480,16 @@ class LutUI(QObject):
         #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
         if ext_name == 'cube':
             self.lut = LUT.FromCubeFile(file_path)
+            self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
             self.show_img()
         elif ext_name == '3dl':
             self.lut = LUT.FromLustre3DLFile(file_path)
+            self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255)
             self.show_img()
     #    elif ext_name == '3dl':
     #         self.lut = LUT.FromNuke3DLFile(file_path)
         else:
-            QMessageBox.information(self.ui,"抱歉","尚不支持该格式",QMessageBox.Ok,QMessageBox.Ok)
+            QMessageBox.information(self.ui, "抱歉", "尚不支持该格式", QMessageBox.Ok, QMessageBox.Ok)
 
 
     def save_lut(self):
