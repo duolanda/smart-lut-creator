@@ -303,11 +303,18 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1,2">
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="autoWbButton">
           <property name="text">
-           <string>预留按钮1</string>
+           <string>自动白平衡</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="faceCheckBox">
+          <property name="text">
+           <string>人脸</string>
           </property>
          </widget>
         </item>

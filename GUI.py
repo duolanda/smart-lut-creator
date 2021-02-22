@@ -28,6 +28,7 @@ from lut_color_space import gamma_convert, gamut_convert
 from generate_HALD import generate_HALD_np
 from lut_compute import compute_lut_np
 from lut_preview import apply_lut_np
+from auto_wb import auto_wb_correct, auto_wb_correct_qcgp
 
 
 class LutUI(QObject):
@@ -114,6 +115,9 @@ class LutUI(QObject):
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
         self.ui.resizeLutButton.clicked.connect(self.resize_lut)
+
+        #右下角的按钮
+        self.ui.autoWbButton.clicked.connect(self.auto_wb)
 
 
 
@@ -570,6 +574,13 @@ class LutUI(QObject):
                 self.hald_img = np.float64(apply_lut_np(self.outlut, self.hald_img)/255) 
             self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
             self.show_img()
+
+    def auto_wb(self):
+        global img_float
+        hald_out = auto_wb_correct(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
+        # hald_out = auto_wb_correct_qcgp(img_float, self.hald_img) 
+        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.show_img()
 
 
 
