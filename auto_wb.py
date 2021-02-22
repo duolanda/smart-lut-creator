@@ -128,26 +128,15 @@ def PerformWhiteBalanceCorrection(I, K, T):
     sz = I.shape
     O = (np.zeros(sz)).astype(np.uint8)
 
-    for x in range(sz[0]):
-        for y in range(sz[1]):
-            Fxy = np.asarray([I[x][y][0], I[x][y][1], I[x][y][2]])
-            #print("@",np.matmul(K, Fxy.T))
-
-            FWB = np.matmul(K, Fxy) + T
-
-            #print(FWB)
-            
-            for p in range(3):
-                O[x,y,p] = FWB[p]
-                if(FWB[p]>255): #避免变黄
-                    O[x,y,p] = 255
+    O = np.einsum('...ij,...j->...i', K, I)+T
+    O = np.clip(O, 0, 255)
                     
     return O
 
 
 if __name__ == '__main__':
 
-    I = skimage.io.imread('test_img/wb.jpg')
+    I = skimage.io.imread('test_img/wb.jpg') #0~255
 
     # 默认参数
 
@@ -183,4 +172,3 @@ if __name__ == '__main__':
 
     io.imsave('test_img/wb_out.jpg', O)
 
-    #因为算的比较慢，到时候或许可以把分辨率缩小后的图片送进来，然后再把生成的 lut 应用到原图（理论上会损失效果，到时候可以做做先实验）
