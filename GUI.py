@@ -29,6 +29,7 @@ from generate_HALD import generate_HALD_np
 from lut_compute import compute_lut_np
 from lut_preview import apply_lut_np
 from auto_wb import auto_wb_correct, auto_wb_correct_qcgp
+import lut_IO
 
 
 class LutUI(QObject):
@@ -504,15 +505,15 @@ class LutUI(QObject):
 
         #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
         if ext_name == 'cube':
-            self.lut = LUT.FromCubeFile(file_path)
+            self.lut = lut_IO.FromCubeFile(file_path)
             self.load_lut()
            
         elif ext_name == '3dl':
-            self.lut = LUT.FromLustre3DLFile(file_path)
+            self.lut = lut_IO.FromLustre3DLFile(file_path)
             self.load_lut()
 
     #    elif ext_name == '3dl':
-    #         self.lut = LUT.FromNuke3DLFile(file_path)
+    #         self.lut = lut_IO.FromNuke3DLFile(file_path)
         else:
             QMessageBox.information(self.ui, "抱歉", "尚不支持该格式", QMessageBox.Ok, QMessageBox.Ok)
 
@@ -551,11 +552,11 @@ class LutUI(QObject):
         #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
         #而且 3dl 文件对尺寸有要求，也没有做相应的转换
         if ext_name == 'cube':
-            LUT.ToCubeFile(self.lut, save_path)
+            lut_IO.ToCubeFile(self.lut, save_path)
         elif ext_name == '3dl':
-            LUT.ToLustre3DLFile(self.lut, save_path)
+            lut_IO.ToLustre3DLFile(self.lut, save_path)
         # elif ext_name == '3dl':
-        #     LUT.ToNuke3DLFile(self.lut, save_path)
+        #     lut_IO.ToNuke3DLFile(self.lut, save_path)
 
 
     def export_img(self):
