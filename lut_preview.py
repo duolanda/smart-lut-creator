@@ -5,6 +5,7 @@ from itertools import chain
 import numpy as np
 
 from lut import LUT
+import lut_IO
 
 
 def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
@@ -16,59 +17,6 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     :param cls: A class which handles the parsed file.
                 Default is ``ImageFilter.Color3DLUT``.
     """
-
-    # lines = 'gen_img/srgb to sgmaut lattice.cube'
-    # name, size = None, None
-    # channels = 3
-    # file = None
-
-    # file = lines = open(lines, 'rt')
-
-    # try:
-    #     iterator = iter(lines)
-
-    #     for i, line in enumerate(iterator, 1):
-    #         line = line.strip()
-    #         if line.startswith('TITLE "'):
-    #             name = line.split('"')[1]
-    #             continue
-    #         if line.startswith('LUT_3D_SIZE '):
-    #             size = [int(x) for x in line.split()[1:]]
-    #             if len(size) == 1:
-    #                 size = size[0]
-    #             continue
-    #         if line.startswith('CHANNELS '):
-    #             channels = int(line.split()[1])
-    #         if line.startswith('LUT_1D_SIZE '):
-    #             raise ValueError("1D LUT cube files aren't supported")
-
-    #         try:
-    #             float(line.partition(' ')[0])
-    #         except ValueError:
-    #             pass
-    #         else:
-    #             # Data starts
-    #             break
-
-    #     if size is None:
-    #         raise ValueError('No size found in the file')
-
-    #     table = []
-    #     for i, line in enumerate(chain([line], iterator), i):
-    #         line = line.strip()
-    #         if not line or line.startswith('#'):
-    #             continue
-    #         try:
-    #             pixel = [float(x) for x in line.split()]
-    #         except ValueError:
-    #             raise ValueError("Not a number on line {}".format(i))
-    #         if len(pixel) != channels:
-    #             raise ValueError(
-    #                 "Wrong number of colors on line {}".format(i))
-    #         table.extend(pixel)
-    # finally:
-    #     if file is not None:
-    #         file.close()
 
     size = lut.cubeSize
     name = lut.name
@@ -84,7 +32,7 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     return instance
 
 def apply_lut(lut_file, img_file):
-    lut = LUT.FromCubeFile(lut_file)
+    lut = lut_IO.FromCubeFile(lut_file)
     lut = load_lut(lut)
 
     img = Image.open(img_file)

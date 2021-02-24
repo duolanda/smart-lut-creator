@@ -49,21 +49,21 @@ def FromLustre3DLFile(lutFilePath):
         raise NameError("Invalid .3dl file.")
 
     lattice = np.zeros((cubeSize, cubeSize, cubeSize), object)
-    currentCubeIndex = 0
+    current_index = 0
     
     for line in lutFileLines[meshLineIndex+1:]:
         if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
             #valid cube line
-            redValue = line.split()[0]
-            greenValue = line.split()[1]
-            blueValue = line.split()[2]
+            red_value = line.split()[0]
+            green_value = line.split()[1]
+            blue_value = line.split()[2]
 
-            redIndex = currentCubeIndex // (cubeSize*cubeSize) #r和b与cube文件是反着的
-            greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
-            blueIndex = currentCubeIndex % cubeSize
+            red_index = current_index // (cubeSize*cubeSize) #r和b与cube文件是反着的
+            green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
+            blue_index = current_index % cubeSize
 
-            lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth) 
-            currentCubeIndex += 1
+            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = outputDepth) 
+            current_index += 1
 
     return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
 
@@ -90,69 +90,88 @@ def FromNuke3DLFile(lutFilePath):
         raise NameError("Invalid .3dl file.")
 
     lattice = np.zeros((cubeSize, cubeSize, cubeSize), object)
-    currentCubeIndex = 0
+    current_index = 0
 
     # for line in lutFileLines[meshLineIndex+1:]:
     for line in lutFileLines[meshLineIndex+1:]:
         # print line
         if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
             #valid cube line
-            redValue = line.split()[0]
-            greenValue = line.split()[1]
-            blueValue = line.split()[2]
+            red_value = line.split()[0]
+            green_value = line.split()[1]
+            blue_value = line.split()[2]
 
-            redIndex = currentCubeIndex // (cubeSize*cubeSize) #注意这里r和b与cube文件是反着的
-            greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
-            blueIndex = currentCubeIndex % cubeSize
+            red_index = current_index // (cubeSize*cubeSize) #注意这里r和b与cube文件是反着的
+            green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
+            blue_index = current_index % cubeSize
 
-            lattice[redIndex, greenIndex, blueIndex] = Color.FromRGBInteger(redValue, greenValue, blueValue, bitdepth = outputDepth) #将整数换算到浮点
-            currentCubeIndex += 1
+            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = outputDepth) #将整数换算到浮点
+            current_index += 1
     return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
 
 
-def FromCubeFile(cubeFilePath):
-    cubeFile = open(cubeFilePath, 'rU') #只读、通用换行
-    cubeFileLines = cubeFile.readlines()
-    cubeFile.close()
+def FromCubeFile(cube_path):
+    with open(cube_path, 'rt') as f:
+        cube_lines = f.readlines()
 
-    cubeSizeLineIndex = 0
-    cubeSize = -1
+    data_line_index = 0
+    name = os.path.splitext(os.path.basename(cube_path))[0]
+    size = -1
 
-    for line in cubeFileLines:
-        if "LUT_3D_SIZE" in line and line[0] != '#': #加一个注释判断
-            cubeSize = int(line.split()[1])
-            break
-        cubeSizeLineIndex += 1
-
-    #找 input range 的，但目前只是找到这两个数，不做进一步处理
-    for i in range(len(cubeFileLines)):
-        line = cubeFileLines[i]
-        if 'LUT_3D_INPUT_RANGE' in line and line[0] != '#':
+    for i in range(len(cube_lines)):
+        line = cube_lines[i]
+        if line.startswith('TITLE'):
+            name = line.split('"')[1]
+            continue
+        if line.startswith('LUT_3D_SIZE'):
+            size = int(line.split()[1])
+            continue
+        if line.startswith('LUT_1D_SIZE'):
+            raise ValueError("1D LUT cube files aren't supported")
+        if line.startswith('LUT_3D_INPUT_RANGE'):    #找 input range 的，但目前只是找到这两个数，不做进一步处理
             domin_min = float(line.split()[1])
             domin_max = float(line.split()[2])
-            cubeSizeLineIndex = i
+            continue
+        if line.startswith('DOMAIN_MIN'):
+            domin_min_rgb = [float(i) for i in line.split()[1:4]]
+            continue
+        if line.startswith('DOMAIN_MAX'):
+            domin_min_rgb = [float(i) for i in line.split()[1:4]]
+            continue
+         
+
+        try:
+            float(line.partition(' ')[0])
+        except ValueError:
+            pass
+        else:
+            # 数据行开始
+            data_line_index = i
             break
+            
 
-    if cubeSize == -1:
-        raise NameError("Invalid .cube file.")
+    if size == -1:
+        raise NameError("No size found in the file")
 
-    lattice = np.zeros((cubeSize, cubeSize, cubeSize), object)
-    currentCubeIndex = 0
-    for line in cubeFileLines[cubeSizeLineIndex+1:]:
-        if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
+    lattice = np.zeros((size, size, size), object)
+    current_index = 0
+    for line in cube_lines[data_line_index:]:
+        if line.startswith('#'):
+            continue
+        if len(line) > 0 and len(line.split()) == 3:
             #lut 数据行
-            redValue = float(line.split()[0])
-            greenValue = float(line.split()[1])
-            blueValue = float(line.split()[2])
+            red_value = float(line.split()[0])
+            green_value = float(line.split()[1])
+            blue_value = float(line.split()[2])
 
-            redIndex = currentCubeIndex % cubeSize
-            greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) ) 
-            blueIndex = currentCubeIndex // (cubeSize*cubeSize)
+            red_index = current_index % size
+            green_index = ( (current_index % (size*size)) // (size) ) 
+            blue_index = current_index // (size*size)
 
-            lattice[redIndex, greenIndex, blueIndex] = Color(redValue, greenValue, blueValue)
-            currentCubeIndex += 1
+            lattice[red_index, green_index, blue_index] = Color(red_value, green_value, blue_value)
+            current_index += 1
 
-    return LUT(lattice, name = os.path.splitext(os.path.basename(cubeFilePath))[0])
+    return LUT(lattice, name = name)
 
 
 def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
@@ -192,16 +211,16 @@ def ToCubeFile(lut, cubeFileOutPath):
     cubeFile = open(cubeFileOutPath, 'w')
     cubeFile.write("LUT_3D_SIZE " + str(cubeSize) + "\n")
     
-    for currentCubeIndex in range(0, cubeSize**3):
-        redIndex = currentCubeIndex % cubeSize
-        greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
-        blueIndex = currentCubeIndex // (cubeSize*cubeSize)
+    for current_index in range(0, cubeSize**3):
+        red_index = current_index % cubeSize
+        green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
+        blue_index = current_index // (cubeSize*cubeSize)
 
-        latticePointColor = lut.lattice[redIndex, greenIndex, blueIndex].Clamped01()
+        latticePointColor = lut.lattice[red_index, green_index, blue_index].Clamped01()
         
         cubeFile.write( latticePointColor.FormattedAsFloat() )
         
-        if(currentCubeIndex != cubeSize**3 - 1):
+        if(current_index != cubeSize**3 - 1):
             cubeFile.write("\n")
 
     cubeFile.close()
