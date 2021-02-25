@@ -29,97 +29,102 @@ def FromIdentity(cubeSize):
                 identityLattice[r, g, b] = Color(indices01[r], indices01[g], indices01[b])
     return LUT(identityLattice, name = "Identity"+str(cubeSize))	   
 
-def FromLustre3DLFile(lutFilePath):
-    lutFile = open(lutFilePath, 'rU')
-    lutFileLines = lutFile.readlines()
-    lutFile.close()
-
-    meshLineIndex = 0
-    cubeSize = -1
-
-    for line in lutFileLines:
-        if "Mesh" in line:
-            inputDepth = int(line.split()[1])
-            outputDepth = int(line.split()[2])
-            cubeSize = 2**inputDepth + 1
-            break
-        meshLineIndex += 1
-
-    if cubeSize == -1:
-        raise NameError("Invalid .3dl file.")
-
-    lattice = np.zeros((cubeSize, cubeSize, cubeSize), object)
-    current_index = 0
-    
-    for line in lutFileLines[meshLineIndex+1:]:
-        if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
-            #valid cube line
-            red_value = line.split()[0]
-            green_value = line.split()[1]
-            blue_value = line.split()[2]
-
-            red_index = current_index // (cubeSize*cubeSize) #r和b与cube文件是反着的
-            green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
-            blue_index = current_index % cubeSize
-
-            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = outputDepth) 
-            current_index += 1
-
-    return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
-
-
-def FromNuke3DLFile(lutFilePath):
-    lutFile = open(lutFilePath, 'rU') 
-    lutFileLines = lutFile.readlines()
-    lutFile.close()
-
-    meshLineIndex = 0
-    cubeSize = -1
-
-    for line in lutFileLines:
-        if "#" in line or line == "\n":
-            meshLineIndex += 1
-        else:
-            break #不加break是不合理的， 不然只要整个文件后面有空行或注释都会+1
-
-    outputDepth = int(math.log(int(lutFileLines[meshLineIndex].split()[-1])+1,2)) #根据mesh行最后一个数算深度，如255得出的就是8
-    cubeSize = len(lutFileLines[meshLineIndex].split()) #meshline 有几个数大小就是多少
-    
-
-    if cubeSize == -1:
-        raise NameError("Invalid .3dl file.")
-
-    lattice = np.zeros((cubeSize, cubeSize, cubeSize), object)
-    current_index = 0
-
-    # for line in lutFileLines[meshLineIndex+1:]:
-    for line in lutFileLines[meshLineIndex+1:]:
-        # print line
-        if len(line) > 0 and len(line.split()) == 3 and "#" not in line:
-            #valid cube line
-            red_value = line.split()[0]
-            green_value = line.split()[1]
-            blue_value = line.split()[2]
-
-            red_index = current_index // (cubeSize*cubeSize) #注意这里r和b与cube文件是反着的
-            green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
-            blue_index = current_index % cubeSize
-
-            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = outputDepth) #将整数换算到浮点
-            current_index += 1
-    return LUT(lattice, name = os.path.splitext(os.path.basename(lutFilePath))[0])
-
-
-def FromCubeFile(cube_path):
-    with open(cube_path, 'rt') as f:
-        cube_lines = f.readlines()
+def FromLustre3DLFile(lut_path):
+    with open(lut_path, 'rt') as f:
+        lut_lines = f.readlines()
 
     data_line_index = 0
-    name = os.path.splitext(os.path.basename(cube_path))[0]
+    name = os.path.splitext(os.path.basename(lut_path))[0]
     size = -1
 
-    for i in range(len(cube_lines)):
-        line = cube_lines[i]
+    for i in range(len(lut_lines)):
+        line = lut_lines[i]
+        if line.startswith('Mesh'):
+            input_depth = int(line.split()[1])
+            output_depth = int(line.split()[2])
+            size = 2**input_depth + 1
+            continue
+        if len(line.split()) == 3: #数据行开始
+            data_line_index = i
+            break
+
+    if size == -1:
+        raise NameError("Invalid .3dl file.")
+
+    lattice = np.zeros((size, size, size), object)
+    current_index = 0
+    
+    for line in lut_lines[data_line_index:]:
+        if line.startswith('#'):
+            continue
+        if len(line) > 0 and len(line.split()) == 3:
+            red_value = line.split()[0]
+            green_value = line.split()[1]
+            blue_value = line.split()[2]
+
+            red_index = current_index // (size*size) #r和b与cube文件是反着的
+            green_index = ( (current_index % (size*size)) // (size) )
+            blue_index = current_index % size
+
+            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = output_depth) 
+            current_index += 1
+
+    return LUT(lattice, name = name)
+
+
+def FromNuke3DLFile(lut_path):
+    with open(lut_path, 'rt') as f:
+        lut_lines = f.readlines()
+
+    data_line_index = 0
+    name = os.path.splitext(os.path.basename(lut_path))[0]
+    size = -1
+
+
+    for i in range(len(lut_lines)):
+        line = lut_lines[i]
+        if "#" in line or line == "\n":
+            continue
+        else:
+            # mesh 行
+            output_depth = int(math.log(int(line.split()[-1])+1,2)) #根据mesh行最后一个数算深度，如255得出的就是8
+            size = len(line.split()) #meshline 有几个数大小就是多少
+            data_line_index = i+1
+            break
+
+    if size == -1:
+        raise NameError("Invalid .3dl file.")
+
+    lattice = np.zeros((size, size, size), object)
+    current_index = 0
+
+    for line in lut_lines[data_line_index:]:
+        if line.startswith('#'):
+            continue
+        if len(line) > 0 and len(line.split()) == 3:
+            red_value = line.split()[0]
+            green_value = line.split()[1]
+            blue_value = line.split()[2]
+
+            red_index = current_index // (size*size) #注意这里r和b与cube文件是反着的
+            green_index = ( (current_index % (size*size)) // (size) )
+            blue_index = current_index % size
+
+            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = output_depth) #将整数换算到浮点
+            current_index += 1
+    return LUT(lattice, name = name)
+
+
+def FromCubeFile(lut_path):
+    with open(lut_path, 'rt') as f:
+        lut_lines = f.readlines()
+
+    data_line_index = 0
+    name = os.path.splitext(os.path.basename(lut_path))[0]
+    size = -1
+
+    for i in range(len(lut_lines)):
+        line = lut_lines[i]
         if line.startswith('TITLE'):
             name = line.split('"')[1]
             continue
@@ -155,7 +160,7 @@ def FromCubeFile(cube_path):
 
     lattice = np.zeros((size, size, size), object)
     current_index = 0
-    for line in cube_lines[data_line_index:]:
+    for line in lut_lines[data_line_index:]:
         if line.startswith('#'):
             continue
         if len(line) > 0 and len(line.split()) == 3:

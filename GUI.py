@@ -503,17 +503,26 @@ class LutUI(QObject):
         self.lut_path = file_path
         ext_name = file_path.split('/')[-1].split('.')[-1].lower() #扩展名，最后统一转成小写
 
-        #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
         if ext_name == 'cube':
             self.lut = lut_IO.FromCubeFile(file_path)
             self.load_lut()
            
         elif ext_name == '3dl':
-            self.lut = lut_IO.FromLustre3DLFile(file_path)
-            self.load_lut()
-
-    #    elif ext_name == '3dl':
-    #         self.lut = lut_IO.FromNuke3DLFile(file_path)
+            with open(file_path, 'rt') as f:
+                lut_lines = f.readlines()
+            count = 0
+            for line in lut_lines:
+                if line.startswith('#') or line=='\n':
+                    continue
+                count += 1
+                if line.startswith('Mesh'):
+                    self.lut = lut_IO.FromLustre3DLFile(file_path)
+                    self.load_lut()
+                    break
+                if count == 20: #很暴力，遍历前20行非空行和非注释行，找到‘mesh’就是Lustre，找不到就是nuke
+                    self.lut = lut_IO.FromNuke3DLFile(file_path)
+                    self.load_lut()
+                    break
         else:
             QMessageBox.information(self.ui, "抱歉", "尚不支持该格式", QMessageBox.Ok, QMessageBox.Ok)
 
@@ -549,14 +558,15 @@ class LutUI(QObject):
 
         ext_name = save_path.split('/')[-1].split('.')[-1].lower() 
 
-        #注意，目前只是单纯根据扩展名进行分类，还没有区分不同格式的 3dl
+        #目前是参照3d lut creator的做法按nuke格式导出3dl；还有一种办法是在菜单栏里加个 文件-导出-cube/lustre 3dl/nuke 3dl等选项，然后往一个函数里传不同参数
         #而且 3dl 文件对尺寸有要求，也没有做相应的转换
         if ext_name == 'cube':
             lut_IO.ToCubeFile(self.lut, save_path)
         elif ext_name == '3dl':
-            lut_IO.ToLustre3DLFile(self.lut, save_path)
+            lut_IO.ToNuke3DLFile(self.lut, save_path)
         # elif ext_name == '3dl':
-        #     lut_IO.ToNuke3DLFile(self.lut, save_path)
+        #     lut_IO.ToLustre3DLFile(self.lut, save_path)
+
 
 
     def export_img(self):
