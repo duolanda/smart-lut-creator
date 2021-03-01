@@ -74,7 +74,7 @@
        <widget class="myQGraphicsView" name="graphicsView"/>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1,1">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,0,1,1">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -90,6 +90,13 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="compareButton">
+          <property name="text">
+           <string>对比</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="zoomInButton">

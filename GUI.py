@@ -56,6 +56,7 @@ class LutUI(QObject):
         self.sgn.drop_img.connect(self.open_img)
 
         self.ui.openImage.triggered.connect(self.img_window)
+        self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
 
@@ -123,7 +124,7 @@ class LutUI(QObject):
 
 
 
-
+        self.comapre_bool = False
         self.hald_img = generate_HALD_np(33)
         self.preview = None
         self.open_img('test_img/panel.jpg', reset = False)  #默认测试图片
@@ -222,6 +223,18 @@ class LutUI(QObject):
         self.ui.graphicsView.setScene(self.scene) #将场景添加至视图
 
         self.adjust_zoom_size()                                                    
+
+    def compare_switch(self):
+        '''
+        在原图和应用lut后的图片之间切换
+        '''
+        if self.comapre_bool:
+            self.show_img()
+            self.comapre_bool = False
+        else:
+            self.show_raw_img()
+            self.comapre_bool = True
+
 
     def zoomin(self):
         """
@@ -424,7 +437,7 @@ class LutUI(QObject):
         完成色域/白点/gamma 相关转换
         '''
 
-        print(time.time())
+        # print(time.time())
 
         in_gamut = self.ui.inGamut.currentText()
         out_gamut = self.ui.outGamut.currentText()
@@ -443,6 +456,19 @@ class LutUI(QObject):
 
         self.show_img()
 
+    def show_raw_img(self):
+        '''
+        将处理前的图片显示到 UI 上
+        '''
+        global img_float
+        
+        img_out = np.uint8(img_float*255)
+        self.preview = img_out
+
+        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
+        pix = QPixmap.fromImage(frame)
+        self.item.setPixmap(pix) 
+
     def show_img(self):
         '''
         将处理后的图片显示到 UI 上
@@ -452,12 +478,11 @@ class LutUI(QObject):
         img_out = apply_lut_np(self.lut, img_float)
         self.preview = img_out
 
-
         frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
 
-        print(time.time())
+        # print(time.time())
 
 
 
