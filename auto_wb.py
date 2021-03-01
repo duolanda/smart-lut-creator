@@ -229,6 +229,7 @@ def auto_wb_correct_qcgp(img, hald_img):
 def auto_wb_srgb(img, hald_img, face = False):
     '''
     "When color constancy goes wrong: Correcting improperly white-balanced images", CVPR 2019.
+    https://github.com/mahmoudnafifi/WB_sRGB
     '''        
     # use upgraded_model= 1 to load our new model that is upgraded with new training examples.
     upgraded_model = 1

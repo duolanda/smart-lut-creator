@@ -18,8 +18,7 @@
 
 import numpy as np
 import numpy.matlib
-import cv2
-
+from PIL import Image
 
 class WBsRGB:
   def __init__(self, gamut_mapping=2, upgraded=0):
@@ -63,7 +62,11 @@ class WBsRGB:
       factor = np.sqrt(202500 / (sz[0] * sz[1]))  # rescale factor
       newH = int(np.floor(sz[0] * factor))
       newW = int(np.floor(sz[1] * factor))
-      I = cv2.resize(I, (newW, newH), interpolation=cv2.INTER_NEAREST)
+      # I = cv2.resize(I, (newW, newH), interpolation=cv2.INTER_NEAREST) #再加个cv2太臃肿了，用PIL替代
+      I_switch = Image.fromarray(np.uint8(I*255))
+      I_switch = I_switch.resize((newW, newH))
+      I = np.float32(np.asarray(I_switch)/255)
+
     I_reshaped = I[(I > 0).all(axis=2)]
     eps = 6.4 / self.h
     hist = np.zeros((self.h, self.h, 3))  # histogram will be stored here

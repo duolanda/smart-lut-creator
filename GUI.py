@@ -634,8 +634,6 @@ class LutUI(QObject):
         self.show_img()
 
 
-
-
 app = QApplication([])
 app.setStyle('WindowsVista')
 lut_ui = LutUI()
