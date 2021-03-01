@@ -8,6 +8,8 @@ import face_recognition
 from sympy.solvers import solve
 from sympy import Symbol  
 
+from classes import WBsRGB as wb_srgb
+
 def EstimateIlluminantRGB(I, p):
 
     R = I[:,:,0]
@@ -223,7 +225,29 @@ def auto_wb_correct_qcgp(img, hald_img):
     qcgp[:,:,2] = hald_img[:,:,2]**2*b_u + hald_img[:,:,2]*b_v
     return qcgp
 
-        
 
+def auto_wb_srgb(img, hald_img, face = False):
+    '''
+    "When color constancy goes wrong: Correcting improperly white-balanced images", CVPR 2019.
+    '''        
+    # use upgraded_model= 1 to load our new model that is upgraded with new training examples.
+    upgraded_model = 1
+    # use gamut_mapping = 1 for scaling, 2 for clipping (our paper's results reported using clipping). If the image is over-saturated, scaling is recommended.
+    gamut_mapping = 2
+
+    if face:
+        face_locations = face_recognition.face_locations(np.uint8(img*255)) #默认用 hog 而不是 cnn
+        if len(face_locations) != 0:
+            top, right, bottom, left = face_locations[0] #用找到的第一个脸
+            img = img[top:bottom, left:right]
+        else:
+            print("并没有找到人脸")
+
+    # processing
+    # create an instance of the WB model
+    wbModel = wb_srgb.WBsRGB(gamut_mapping=gamut_mapping,
+                            upgraded=upgraded_model)
+    outImg = wbModel.correctImage(img, hald_img)  # white balance it
+    return outImg
 
 
