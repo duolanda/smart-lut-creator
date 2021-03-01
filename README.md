@@ -19,6 +19,7 @@
 
 ### 功能相关
 
+- lut_IO.py - LUT 的输入输出，目前支持 cube 和 3dl  
 - lut_color_enhance.py - 一级校色
 - lut_color_space.py - 色彩空间（含色域、Gamma、白点）转换
 - auto_wb.py - 自动白平衡
@@ -33,7 +34,6 @@
 
 ### 早期测试用
 
-- lut_IO.py - 测试 LUT 读写，未来可能将 lut.py 中的 IO 部分分离到这里
 - lut_generator.py - 测试色彩空间转换 LUT 生成
 - lut_editor.py - 测试 LUT 编辑部分
 
