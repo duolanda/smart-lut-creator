@@ -131,22 +131,6 @@ class LUT:
 		else:
 			self.lattice_np = self.lut_to_numpy(False)
 	
-	def _LatticeTo3DLString(self, bitdepth):
-			"""
-			Used for internal creating of 3DL files.
-			"""
-			string = ""
-			cubeSize = self.cubeSize
-			for currentCubeIndex in range(0, cubeSize**3):
-				redIndex = currentCubeIndex // (cubeSize*cubeSize)
-				greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
-				blueIndex = currentCubeIndex % cubeSize
-
-				latticePointColor = self.lattice[redIndex, greenIndex, blueIndex].Clamped01()
-				
-				string += latticePointColor.FormattedAsInteger(2**bitdepth-1) + "\n"
-			
-			return string
 
 	@staticmethod
 	def FromCompute(cubeSize, HALD_data, name=None):

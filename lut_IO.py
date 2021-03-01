@@ -17,6 +17,24 @@ def Indices01(cubeSize): #这里的 01 是域为 0~1 的意思，即将其范围
 		indices.append(float(i) * ratio)
 	return indices
 
+def _LatticeTo3DLString(lut, bitdepth):
+        """
+        Used for internal creating of 3DL files.
+        """
+        string = ""
+        cubeSize = lut.cubeSize
+        for currentCubeIndex in range(0, cubeSize**3):
+            redIndex = currentCubeIndex // (cubeSize*cubeSize)
+            greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
+            blueIndex = currentCubeIndex % cubeSize
+
+            latticePointColor = lut.lattice[redIndex, greenIndex, blueIndex].Clamped01()
+            
+            string += latticePointColor.FormattedAsInteger(2**bitdepth-1) + "\n"
+        
+        return string
+
+
 def FromIdentity(cubeSize):
     """
     Creates an indentity LUT of specified size.
@@ -192,7 +210,7 @@ def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
     lutFile.write("Mesh " + str(int(inputDepth)) + " " + str(bitdepth) + "\n")
     lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**10 - 1)]) + "\n")#和深度无关，这一行都是 0~1023
     
-    lutFile.write(lut._LatticeTo3DLString(bitdepth))
+    lutFile.write(_LatticeTo3DLString(lut, bitdepth))
 
     lutFile.write("\n#Tokens required by applications - do not edit\nLUT8\ngamma 1.0")
 
@@ -206,7 +224,7 @@ def ToNuke3DLFile(lut, fileOutPath, bitdepth = 16):
 
     lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**bitdepth - 1)]) + "\n")
 
-    lutFile.write(lut._LatticeTo3DLString(bitdepth))
+    lutFile.write(_LatticeTo3DLString(lut, bitdepth))
 
     lutFile.close()
 

@@ -17,6 +17,7 @@ from PySide6.QtCore import QFile, Qt, QEvent, QObject
 from PySide6.QtGui import QImage, QPixmap, QIcon
 from MyWidget import myQGraphicsView
 from MySignal import mysgn
+from output_dialog import Output_Dialog
 
 
 import colour
@@ -546,6 +547,11 @@ class LutUI(QObject):
 
 
     def export_lut(self, path=None):
+        self.output_dialog = Output_Dialog()
+        self.output_dialog.set_lut_name(self.lut.name)
+        self.output_dialog.show()
+        self.output_dialog.exec_()
+
         if path:
             save_path = path
         else:
