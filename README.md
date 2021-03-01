@@ -48,6 +48,6 @@
 
 - [pylut: Create and Modify 3D LUTs in Python!](https://github.com/gregcotten/pylut)
 - [lut-maker: Generate 3D color LUTs in Adobe Cube and Pseudo-3D texture format](https://github.com/faymontage/lut-maker)
-
 - [ColorPy: Physical color calculations in Python.](https://github.com/markkness/ColorPy)
 - [pillow-lut-tools: Lookup tables loading, manipulating, and generating for Pillow library](https://github.com/homm/pillow-lut-tools)
+- [mahmoudnafifi/WB_sRGB: White balance camera-rendered sRGB images (CVPR 2019)](https://github.com/mahmoudnafifi/WB_sRGB)
