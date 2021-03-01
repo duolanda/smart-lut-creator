@@ -16,6 +16,7 @@ class Output_Dialog(QDialog):
 
         self.formatComboBox.currentIndexChanged.connect(self.change_element)
         self.filePathPushButton.clicked.connect(self.select_file)
+        self.okPushButton.clicked.connect(self.export)
 
 
     def setupUi(self, Dialog):
@@ -25,6 +26,7 @@ class Output_Dialog(QDialog):
         Dialog.resize(400, 300)
 
         self.ext = '.cube'
+        self.output_info = []
 
         self.label = QLabel(Dialog)
         self.label.setObjectName("label")
@@ -168,13 +170,34 @@ class Output_Dialog(QDialog):
             self.sizeComboBox.addItem("64")
 
     def select_file(self):
-        name = "123" #原来是等于 self.lut.name
+        name =self.lut_name
         self.output_path = QFileDialog.getSaveFileName(self, '选择 LUT 存储路径', './'+ name + self.ext)
         self.filePathLineEdit.setText(self.output_path[0])
 
     def set_lut_name(self, name):
         self.lut_name = name
         self.filePathLineEdit.setText(os.environ['USERPROFILE']+ '\\' + self.lut_name +".cube") #其实这里斜杠全是反的，以后再改吧
+
+    def export(self):
+
+        file_path = self.filePathLineEdit.text()
+        file_ext = self.ext
+
+        if self.ext == ".cube":
+            self.output_info = [file_path, file_ext]
+            
+
+        elif self.ext == ".3dl":
+            file_type = self.typeComboBox.currentText()
+            file_size = self.sizeComboBox.currentText()
+            file_depth = self.depthComboBox.currentText()
+            self.output_info = [file_path, file_ext, file_type, file_size, file_depth]
+
+        self.close()
+
+    def return_info(self):
+        return self.output_info
+        
 
 
 if __name__ == '__main__':

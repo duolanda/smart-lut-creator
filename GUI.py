@@ -551,28 +551,36 @@ class LutUI(QObject):
         self.output_dialog.set_lut_name(self.lut.name)
         self.output_dialog.show()
         self.output_dialog.exec_()
+        output_info = self.output_dialog.return_info()
 
-        if path:
+        if path: #直接覆盖保存，目前只对 cube 支持较好
             save_path = path
-        else:
-            save_path = QFileDialog.getSaveFileName(self.ui, '导出当前 LUT', './'+self.lut.name+'.cube', 'Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)')
-            if save_path[0] == '': 
+            ext_name = save_path.split('/')[-1].split('.')[-1].lower() 
+
+            if ext_name == 'cube':
+                lut_IO.ToCubeFile(self.lut, save_path)
+            elif ext_name == '3dl':
+                lut_IO.ToNuke3DLFile(self.lut, save_path)
+            # elif ext_name == '3dl':
+            #     lut_IO.ToLustre3DLFile(self.lut, save_path)
+        else: #正常导出
+            if len(output_info) == 0: 
                 return
 
-            save_path = save_path[0]
-            self.lut_path = save_path
+            save_path = output_info[0]
+            ext_name = output_info[1][1:]
+            if ext_name == 'cube':
+                lut_IO.ToCubeFile(self.lut, save_path)
+            elif ext_name == '3dl':
+                lut_type = output_info[2]
+                lut_size = int(output_info[3])
+                lut_depth = int(output_info[4][:2])
 
-        ext_name = save_path.split('/')[-1].split('.')[-1].lower() 
-
-        #目前是参照3d lut creator的做法按nuke格式导出3dl；还有一种办法是在菜单栏里加个 文件-导出-cube/lustre 3dl/nuke 3dl等选项，然后往一个函数里传不同参数
-        #而且 3dl 文件对尺寸有要求，也没有做相应的转换
-        if ext_name == 'cube':
-            lut_IO.ToCubeFile(self.lut, save_path)
-        elif ext_name == '3dl':
-            lut_IO.ToNuke3DLFile(self.lut, save_path)
-        # elif ext_name == '3dl':
-        #     lut_IO.ToLustre3DLFile(self.lut, save_path)
-
+                self.lut = self.lut.Resize(lut_size, reanme = False)
+                if lut_type == 'Lustre':
+                    lut_IO.ToLustre3DLFile(self.lut, save_path, lut_depth)
+                elif lut_type == 'Nuke':
+                    lut_IO.ToNuke3DLFile(self.lut, save_path, lut_depth)
 
 
     def export_img(self):

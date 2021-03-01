@@ -207,12 +207,17 @@ class LUT:
 
 		return LerpColor(C0, C1, 1.0 - (upperGreenPoint - greenPoint))
 
-	def Resize(self, newCubeSize):
+	def Resize(self, newCubeSize, rename = True):
 		"""
 		Scales the lattice to a new cube size.
 		"""
 		if newCubeSize == self.cubeSize:
 			return self
+
+		if rename:
+			new_name = self.name + "_Resized" + str(newCubeSize)
+		else:
+			new_name = self.name
 
 		newLattice = EmptyLatticeOfSize(newCubeSize)
 		ratio = float(self.cubeSize - 1.0) / float(newCubeSize-1.0)
@@ -220,7 +225,7 @@ class LUT:
 			for y in range(newCubeSize):
 				for z in range(newCubeSize):
 					newLattice[x, y, z] = self.ColorAtInterpolatedLatticePoint(x*ratio, y*ratio, z*ratio)
-		return LUT(newLattice, name = self.name + "_Resized"+str(newCubeSize))
+		return LUT(newLattice, name = new_name)
 
 	def CombineWithLUT(self, otherLUT):
 		"""
