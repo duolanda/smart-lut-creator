@@ -15,8 +15,8 @@ from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxL
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QEvent, QObject
 from PySide6.QtGui import QImage, QPixmap, QIcon
-from MyWidget import myQGraphicsView
-from MySignal import mysgn
+from my_widget import myQGraphicsView
+from my_signal import mysgn
 from output_dialog import Output_Dialog
 
 

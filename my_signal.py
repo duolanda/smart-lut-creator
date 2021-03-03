@@ -1,8 +1,8 @@
 from PySide6.QtCore import Signal, QObject
 
 
-class MySignal(QObject):
+class my_signal(QObject):
     drop_img = Signal(str)
 
 
-mysgn = MySignal()
+mysgn = my_signal()

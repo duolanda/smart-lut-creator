@@ -384,7 +384,7 @@
   <customwidget>
    <class>myQGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>MyWidget.py</header>
+   <header>my_widget.py</header>
   </customwidget>
  </customwidgets>
  <resources/>

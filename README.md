@@ -9,7 +9,7 @@
 
 ### 主要文件
 
-- lut.py - LUT 类，包含输入输出、尺寸修改等针对 LUT 的操作
+- lut.py - LUT 类，包含颜色插值、尺寸修改等针对 LUT 的操作
 - GUI.py - Qt GUI，程序启动的入口
 
 ### HALD 相关
@@ -29,8 +29,8 @@
 
 - Smart LUT Creator.ui - Qt  Designer 生成的可动态加载的图形界面
 - icon.png - 程序图标（暂时）
-- MyWidget.py - 实现可接受拖拽动作的 myQGraphicsView
-- MySignal.py - 帮助 MyWidget 传递信号
+- my_widget.py - 实现可接受拖拽动作的 myQGraphicsView
+- my_signal.py - 帮助 my_widget 传递信号
 
 ### 早期测试用
 

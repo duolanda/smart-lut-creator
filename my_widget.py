@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QGraphicsView
-from MySignal import mysgn
+from my_signal import mysgn
 
 class myQGraphicsView(QGraphicsView):
     #这个文件主要是为了可以拖动打开图片
