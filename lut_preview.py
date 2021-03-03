@@ -4,9 +4,6 @@ from itertools import chain
 
 import numpy as np
 
-from lut import LUT
-import lut_IO
-
 
 def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
     """Loads 3D lookup table from .cube file format.
@@ -31,25 +28,11 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
         instance.name = name
     return instance
 
-def apply_lut(lut_file, img_file):
-    lut = lut_IO.FromCubeFile(lut_file)
-    lut = load_lut(lut)
-
-    img = Image.open(img_file)
-    img.filter(lut).save('PILTest.bmp')
-        
-
+    
 def apply_lut_np(lut, img):
     lut = load_lut(lut)
     img = Image.fromarray(np.uint8(img*255))
     return np.array(img.filter(lut))
 
 
-if __name__ == '__main__':
-    # lut_file = 'test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube'
-    # img_file = 'test_img/Alexa.bmp'
-    # apply_lut(lut_file, img_file)
 
-    lut_file = 'gen_img/srgb to sgmaut lattice.cube'
-    img_file = 'test_img/fruits.tif '
-    apply_lut(lut_file, img_file)

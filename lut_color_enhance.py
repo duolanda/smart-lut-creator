@@ -1,6 +1,5 @@
 from math import sin
 
-import colour
 import numpy 
 
 
@@ -108,27 +107,5 @@ def rgb_color_enhance(source,
     output = output.clip(0,1)
     return output
 
-if __name__ == '__main__': 
-    img_in = colour.read_image('test_img/fruits.tif')
 
-    # img_out = rgb_color_enhance(img_in, brightness = 0.5) #-1~1
-    # colour.write_image(img_out, 'test_img/ce-brightness.png')
-
-    # img_out = rgb_color_enhance(img_in, exposure = 2.0) #-5~5
-    # colour.write_image(img_out, 'test_img/ce-exposure.png')
-
-    # img_out = rgb_color_enhance(img_in, warmth = 0.8) #-1~1
-    # colour.write_image(img_out, 'test_img/ce-warmth.png')
-
-    # img_out = rgb_color_enhance(img_in, contrast = 2.0) #-1~5
-    # colour.write_image(img_out, 'test_img/ce-contrast.png')
-
-    # img_out = rgb_color_enhance(img_in, saturation = 3.0) #-1~5
-    # colour.write_image(img_out, 'test_img/ce-saturation.png')
-
-    # img_out = rgb_color_enhance(img_in, vibrance = 0.5) #-1~1
-    # colour.write_image(img_out, 'test_img/ce-vibrance.png')
-
-    # img_out = rgb_color_enhance(img_in, tint = 0.3) #-0.5~0.5
-    # colour.write_image(img_out, 'test_img/ce-tint.png')
 

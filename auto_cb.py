@@ -37,9 +37,3 @@ def simplest_cb(img, hald_img, percent=1):
     return cv2.merge(out_channels)    
 
 
-if __name__ == '__main__':
-    img = cv2.imread('test_img/alexa.jpg') #0~255
-    out = simplest_cb(img, 1)
-    cv2.imshow("before", img)
-    cv2.imshow("after", out)
-    cv2.waitKey(0)

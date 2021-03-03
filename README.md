@@ -32,14 +32,8 @@
 - my_widget.py - 实现可接受拖拽动作的 myQGraphicsView
 - my_signal.py - 帮助 my_widget 传递信号
 
-### 早期测试用
-
-- lut_generator.py - 测试色彩空间转换 LUT 生成
-- lut_editor.py - 测试 LUT 编辑部分
-
 ### 其他
 
-- constants.py - 常量定义，来自 lut-maker，未来可能会删除
 - kdtree.py - 配合 lut.py 中的 Reverse 方法，未来可能会删除
 
 

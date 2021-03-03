@@ -214,36 +214,6 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
     return img
 
 
-if __name__ == '__main__': #如果不用这个，导包的时候下面的语句也会执行
-    img_in = colour.read_image('test_img/lena_std.tif')
-    # img_in = colour.read_image('test_img/fruits.tif')
-    # img_in = colour.read_image('test_img/Alexa.jpg')
-    # img_in = colour.read_image('test_img/s-log.tif')
-    # img_in = colour.read_image('HALD_36.png')
-
-
-    # img_out = cs_convert('srgb', 'srgb', img_in, input_gamma=2.6, output_gamma=2.2)
-
-    # img_out = gamut_convert('sgamut', 'srgb', img_in)
-    # img_out = gamma_convert(img_out, 'rec709', 1) #完成色域转换必须调 gamma
-
-    # img_out = gamma_convert(img_in, input_gamma='rec709', output_gamma='slog3')
-    # img_out = gamma_convert(img_in, input_gamma='slog3', output_gamma='rec709', clip=False)
-
-    # img_out = gamut_convert('alexawg', 'srgb', img_in)
-    # img_out = gamma_convert(img_out, 'srgb', 'rec709')
-
-    img_out = gamma_convert(img_in, input_gamma='Sony S-Log3', output_gamma='sRGB')
-
-    # img_out = gamma_convert(img_in, input_gamma='srgb', output_gamma='rec709')
-
-    # img_out = gamut_convert('srgb', 'srgb', img_in, True, 'D65', 'D50')
-    # img_out = gamma_convert(img_out, 'rec709', 'srgb')
-
-
-
-
-    colour.write_image(img_out, 'test_img/output.png')
 
 
 
