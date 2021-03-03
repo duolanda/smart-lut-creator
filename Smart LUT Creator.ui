@@ -326,9 +326,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="autoCbButton">
           <property name="text">
-           <string>预留按钮2</string>
+           <string>自动色彩均衡</string>
           </property>
          </widget>
         </item>

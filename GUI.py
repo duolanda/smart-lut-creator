@@ -30,6 +30,7 @@ from generate_HALD import generate_HALD_np
 from lut_compute import compute_lut_np
 from lut_preview import apply_lut_np
 from auto_wb import auto_wb_correct, auto_wb_correct_qcgp, auto_wb_srgb
+from auto_cb import simplest_cb
 import lut_IO
 
 
@@ -121,6 +122,7 @@ class LutUI(QObject):
 
         #右下角的按钮
         self.ui.autoWbButton.clicked.connect(self.auto_wb)
+        self.ui.autoCbButton.clicked.connect(self.auto_cb)
 
 
 
@@ -630,6 +632,15 @@ class LutUI(QObject):
         # hald_out = auto_wb_correct(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
         # hald_out = auto_wb_correct_qcgp(img_float, self.hald_img) 
         hald_out = auto_wb_srgb(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
+        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.show_img()
+
+    def auto_cb(self):
+        global img_float
+        img_int = np.uint8(img_float*255)
+        hald_int = np.uint8(self.hald_img*255)
+        hald_out = simplest_cb(img_int, hald_int) 
+        hald_out = np.float32(hald_out/255)
         self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
         self.show_img()
 

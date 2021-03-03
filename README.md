@@ -51,3 +51,4 @@
 - [ColorPy: Physical color calculations in Python.](https://github.com/markkness/ColorPy)
 - [pillow-lut-tools: Lookup tables loading, manipulating, and generating for Pillow library](https://github.com/homm/pillow-lut-tools)
 - [mahmoudnafifi/WB_sRGB: White balance camera-rendered sRGB images (CVPR 2019)](https://github.com/mahmoudnafifi/WB_sRGB)
+- [Simple color balance algorithm using Python 2.7.8 and OpenCV 2.4.10](https://gist.github.com/DavidYKay/9dad6c4ab0d8d7dbf3dc)
