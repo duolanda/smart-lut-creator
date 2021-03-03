@@ -509,7 +509,7 @@ class LutUI(QObject):
 
 
     def add_lut(self):
-        value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（0~128）:", self.lut.cubeSize, 2, 65)
+        value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（2~65）:", self.lut.cubeSize, 2, 65)
         if ok and value != self.lut.cubeSize:
             self.hald_img = generate_HALD_np(value)
             self.lut = compute_lut_np(self.hald_img, value, '未命名')
@@ -558,6 +558,7 @@ class LutUI(QObject):
         '''
         因为打开不同格式 lut 文件都会指向一些相同的操作，再单独用一个函数来处理
         '''
+        self.hald_img = generate_HALD_np(self.lut.cubeSize)
         self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
         self.show_img()
         self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
@@ -603,11 +604,11 @@ class LutUI(QObject):
                 lut_size = int(output_info[3])
                 lut_depth = int(output_info[4][:2])
 
-                self.lut = self.lut.Resize(lut_size, reanme = False)
+                output_lut = self.lut.Resize(lut_size, rename = False)
                 if lut_type == 'Lustre':
-                    lut_IO.ToLustre3DLFile(self.lut, save_path, lut_depth)
+                    lut_IO.ToLustre3DLFile(output_lut, save_path, lut_depth)
                 elif lut_type == 'Nuke':
-                    lut_IO.ToNuke3DLFile(self.lut, save_path, lut_depth)
+                    lut_IO.ToNuke3DLFile(output_lut, save_path, lut_depth)
 
 
     def export_img(self):
