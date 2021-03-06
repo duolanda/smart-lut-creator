@@ -114,7 +114,6 @@ class LutUI(QObject):
         #上面的一排按钮
         self.ui.addLutButton.clicked.connect(self.add_lut)
         self.ui.openLutButton.clicked.connect(self.read_lut)
-        self.ui.saveLutButton.clicked.connect(self.save_lut)
         self.ui.exportLutButton.clicked.connect(self.export_lut)
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
@@ -563,15 +562,6 @@ class LutUI(QObject):
         self.show_img()
         self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
         self.outlut = self.lut #为了resize时可以保留外部lut对hald的修改，单独存一下该lut
-
-
-    def save_lut(self):
-        if self.lut_path:
-            #如果有路径说明是已经存在的 lut 文件，直接覆盖保存
-            self.export_lut(self.lut_path)
-        else:
-            #没有路径直接调用另存为
-            self.export_lut()
 
 
     def export_lut(self, path=None):
