@@ -113,11 +113,12 @@ class LutUI(QObject):
 
         #上面的一排按钮
         self.ui.addLutButton.clicked.connect(self.add_lut)
-        self.ui.openLutButton.clicked.connect(self.read_lut)
+        self.ui.openLutButton.clicked.connect(self.load_lut)
         self.ui.exportLutButton.clicked.connect(self.export_lut)
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
         self.ui.resizeLutButton.clicked.connect(self.resize_lut)
+        self.ui.combineButton.clicked.connect(self.combine_lut)
 
         #右下角的按钮
         self.ui.autoWbButton.clicked.connect(self.auto_wb)
@@ -520,19 +521,18 @@ class LutUI(QObject):
 
     def read_lut(self):
         '''
-        打开外部 LUT
+        打开外部 LUT，返回读取到的 lut 对象
         '''
         openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)') #.代表是当前目录
         if openfile_name[0] == []: 
-            return
+            return None
 
         file_path = openfile_name[0][0]
         self.lut_path = file_path
         ext_name = file_path.split('/')[-1].split('.')[-1].lower() #扩展名，最后统一转成小写
 
         if ext_name == 'cube':
-            self.lut = lut_IO.FromCubeFile(file_path)
-            self.load_lut()
+            return lut_IO.FromCubeFile(file_path)
            
         elif ext_name == '3dl':
             with open(file_path, 'rt') as f:
@@ -543,20 +543,24 @@ class LutUI(QObject):
                     continue
                 count += 1
                 if line.startswith('Mesh'):
-                    self.lut = lut_IO.FromLustre3DLFile(file_path)
-                    self.load_lut()
-                    break
+                    return lut_IO.FromLustre3DLFile(file_path)
+
                 if count == 20: #很暴力，遍历前20行非空行和非注释行，找到‘mesh’就是Lustre，找不到就是nuke
-                    self.lut = lut_IO.FromNuke3DLFile(file_path)
-                    self.load_lut()
-                    break
+                    return lut_IO.FromNuke3DLFile(file_path)
+
         else:
             QMessageBox.information(self.ui, "抱歉", "尚不支持该格式", QMessageBox.Ok, QMessageBox.Ok)
 
     def load_lut(self):
         '''
-        因为打开不同格式 lut 文件都会指向一些相同的操作，再单独用一个函数来处理
+        响应按钮，处理读到 lut 文件后指向的相同操作
         '''
+        read_lut = self.read_lut()
+        if read_lut == None:
+            return
+        else:
+            self.lut = read_lut
+
         self.hald_img = generate_HALD_np(self.lut.cubeSize)
         self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
         self.show_img()
@@ -617,6 +621,12 @@ class LutUI(QObject):
                 self.hald_img = np.float64(apply_lut_np(self.outlut, self.hald_img)/255) 
             self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
             self.show_img()
+
+    def combine_lut(self):
+        lut2 = self.read_lut()
+        self.lut = self.lut.CombineWithLUT(lut2)
+        self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
+        self.show_img()
 
     def auto_wb(self):
         global img_float
