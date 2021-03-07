@@ -125,6 +125,7 @@ class LutUI(QObject):
         self.ui.autoCbButton.clicked.connect(self.auto_cb)
 
 
+        self.hald1, self.hald2, self.hald3 = None, None, None #保证各模块修改叠加用的变量，123分别对应awb、cs、ce
 
         self.comapre_bool = False
         self.hald_img = generate_HALD_np(33)
@@ -427,10 +428,16 @@ class LutUI(QObject):
         完成一级校色
         '''
         global enhence_list
-        hald_out = rgb_color_enhance(self.hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
+
+        if type(self.hald2) != type(None):
+            hald_img = self.hald2
+
+        hald_out = rgb_color_enhance(hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
         self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
 
         self.show_img()
+
+        self.hald3 = hald_out
 
 
 
@@ -440,6 +447,11 @@ class LutUI(QObject):
         '''
 
         # print(time.time())
+
+        if type(self.hald1) != type(None):
+            hald_img = self.hald1
+        else:
+            hald_img = self.hald_img
 
         in_gamut = self.ui.inGamut.currentText()
         out_gamut = self.ui.outGamut.currentText()
@@ -451,12 +463,16 @@ class LutUI(QObject):
         out_wp = self.ui.outWp.currentText()
 
         #等处理好了其它的再把 XYZ、HSV 这些加进来
-        img_out = gamut_convert(in_gamut, out_gamut, self.hald_img, False, True, in_wp, out_wp)
+        img_out = gamut_convert(in_gamut, out_gamut, hald_img, False, True, in_wp, out_wp)
         img_out = np.clip(img_out, 0, 1)
         hald_out = gamma_convert(img_out, in_gamma, out_gamma)
         self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
 
         self.show_img()
+
+        self.hald2 = hald_out
+        if type(self.hald3) != type(None): #hald3不为空说明改过ce了，那么只要改cs就要让ce在改后的cs基础上接着改
+            self.color_enhence()
 
     def show_raw_img(self):
         '''
@@ -636,6 +652,9 @@ class LutUI(QObject):
         self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
         self.show_img()
 
+        self.hald1 = hald_out
+        self.hald2 = hald_out
+
     def auto_cb(self):
         global img_float
         img_int = np.uint8(img_float*255)
@@ -644,6 +663,9 @@ class LutUI(QObject):
         hald_out = np.float32(hald_out/255)
         self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
         self.show_img()
+
+        self.hald1 = hald_out
+        self.hald2 = hald_out
 
 
 app = QApplication([])

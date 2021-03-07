@@ -172,3 +172,13 @@ def test_auto_cb():
     cv2.imshow("before", img)
     cv2.imshow("after", out)
     cv2.waitKey(0)
+
+def test_custom_wb():
+    xy = colour.CCT_to_xy(5500)
+    xyz = colour.xy_to_XYZ(xy)
+    rgb = colour.XYZ_to_sRGB(xyz) #只是能将开尔文转到 rgb 而已，并不能应用到图像上
+    print(rgb)
+
+
+if __name__ == '__main__':
+    test_custom_wb()
