@@ -12,6 +12,7 @@ from PySide6.QtWidgets import *
 class Output_Dialog(QDialog):
     def __init__(self):
         super(Output_Dialog, self).__init__()
+        self.setWindowIcon(QIcon("icon.png"))
         self.setupUi(self)
 
         self.formatComboBox.currentIndexChanged.connect(self.change_element)
@@ -108,7 +109,7 @@ class Output_Dialog(QDialog):
             self.typeComboBox.setObjectName("typeComboBox")
             self.typeComboBox.addItem("Lustre")
             self.typeComboBox.addItem("Nuke")
-            self.typeComboBox.currentIndexChanged.connect(self.change_option)
+            self.typeComboBox.currentIndexChanged.connect(self.change_3dl_option)
 
             self.label_4 = QLabel(Dialog)
             self.label_4.setObjectName("label_4")
@@ -157,7 +158,7 @@ class Output_Dialog(QDialog):
         file_name[-1] = self.ext[1:]
         self.filePathLineEdit.setText('.'.join(file_name))
 
-    def change_option(self):
+    def change_3dl_option(self):
         if self.typeComboBox.currentText() == "Lustre":
             self.sizeComboBox.clear()
             self.sizeComboBox.addItem("17")
