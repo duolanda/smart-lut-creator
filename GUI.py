@@ -655,7 +655,7 @@ class LutUI(QObject):
         current_time = active_sequence_qe.CTI.timecode
         success = active_sequence_qe.exportFrameJPEG(current_time, os.path.abspath('.')+'\\pr_frame.jpg') #将图片保存到临时目录，读取后再删掉
         while(not os.path.isfile(os.path.abspath('.')+'\\pr_frame.jpg')):
-            time.sleep(0.1) #pr导出文件需要时间，要等一下
+            time.sleep(0.5) #pr导出文件需要时间，要等一下 #如果还出现权限错误，删掉while和isfile判断，直接sleep
         self.open_img('./pr_frame.jpg')
         os.remove('./pr_frame.jpg')
 
