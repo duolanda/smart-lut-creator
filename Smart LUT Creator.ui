@@ -48,13 +48,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="loadPrButton">
-          <property name="text">
-           <string>读取pr当前预览</string>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QPushButton" name="exportImgButton">
           <property name="text">
            <string>导出当前预览</string>
@@ -377,6 +370,7 @@
     <property name="title">
      <string>编辑</string>
     </property>
+    <addaction name="loadPrFrame"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
@@ -384,6 +378,11 @@
   <action name="openImage">
    <property name="text">
     <string>打开图片</string>
+   </property>
+  </action>
+  <action name="loadPrFrame">
+   <property name="text">
+    <string>读取pr当前预览</string>
    </property>
   </action>
  </widget>

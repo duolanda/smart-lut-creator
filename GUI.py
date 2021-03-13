@@ -59,6 +59,8 @@ class LutUI(QObject):
         self.sgn.drop_img.connect(self.open_img)
 
         self.ui.openImage.triggered.connect(self.img_window)
+        self.ui.loadPrFrame.triggered.connect(self.load_frame_from_pr)
+
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
@@ -119,7 +121,6 @@ class LutUI(QObject):
         self.ui.exportLutButton.clicked.connect(self.export_lut)
         self.ui.exportImgButton.clicked.connect(self.export_img)
         self.ui.openImgButton.clicked.connect(self.img_window)
-        self.ui.loadPrButton.clicked.connect(self.load_frame_from_pr)
         self.ui.resizeLutButton.clicked.connect(self.resize_lut)
         self.ui.combineButton.clicked.connect(self.combine_lut)
 
@@ -648,9 +649,12 @@ class LutUI(QObject):
         self.show_img()
 
     def load_frame_from_pr(self):
-        project_opened, sequence_active = wrappers.check_active_sequence(crash=False)
-        if not (project_opened and sequence_active):
-            QMessageBox.information(self.ui, "错误", "pr 未打开或没有激活序列", QMessageBox.Ok, QMessageBox.Ok)
+        try:
+            project_opened, sequence_active = wrappers.check_active_sequence(crash=False)
+            if not (project_opened and sequence_active):
+                QMessageBox.information(self.ui, "错误", "pr 未打开或没有激活序列", QMessageBox.Ok, QMessageBox.Ok)
+        except:
+                QMessageBox.information(self.ui, "错误", "pr 未打开或没有激活序列", QMessageBox.Ok, QMessageBox.Ok)
         active_sequence_qe = pymiere.objects.qe.project.getActiveSequence()
         current_time = active_sequence_qe.CTI.timecode
         success = active_sequence_qe.exportFrameJPEG(current_time, os.path.abspath('.')+'\\pr_frame.jpg') #将图片保存到临时目录，读取后再删掉
