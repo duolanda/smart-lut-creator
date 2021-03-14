@@ -371,6 +371,7 @@
      <string>编辑</string>
     </property>
     <addaction name="loadPrFrame"/>
+    <addaction name="setDavinciLut"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
@@ -383,6 +384,11 @@
   <action name="loadPrFrame">
    <property name="text">
     <string>读取pr当前预览</string>
+   </property>
+  </action>
+  <action name="setDavinciLut">
+   <property name="text">
+    <string>将当前 LUT 应用到达芬奇</string>
    </property>
   </action>
  </widget>

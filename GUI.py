@@ -23,8 +23,10 @@ from output_dialog import Output_Dialog
 import colour
 import numpy as np
 import time
+from shutil import copy
 import pymiere
 from pymiere import wrappers
+import DaVinciResolveScript as bmd
 from lut import LUT
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import gamma_convert, gamut_convert
@@ -60,6 +62,7 @@ class LutUI(QObject):
 
         self.ui.openImage.triggered.connect(self.img_window)
         self.ui.loadPrFrame.triggered.connect(self.load_frame_from_pr)
+        self.ui.setDavinciLut.triggered.connect(self.set_davinci_lut)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -433,6 +436,7 @@ class LutUI(QObject):
         '''
         global enhence_list
 
+        hald_img = self.hald_img
         if type(self.hald2) != type(None):
             hald_img = self.hald2
 
@@ -663,6 +667,28 @@ class LutUI(QObject):
         self.open_img('./pr_frame.jpg')
         os.remove('./pr_frame.jpg')
 
+    def set_davinci_lut(self):
+        RESOLVE_LUT_DIR = 'C:/ProgramData/Blackmagic Design/DaVinci Resolve/Support/LUT/Custom'
+
+        resolve = bmd.scriptapp("Resolve")
+        if resolve == None:
+            QMessageBox.information(self.ui, "错误", "Davinci Resolve 未打开", QMessageBox.Ok, QMessageBox.Ok)
+        projectManager = resolve.GetProjectManager()
+        project = projectManager.GetCurrentProject()
+        timeline = project.GetCurrentTimeline()
+
+        if not os.path.exists(RESOLVE_LUT_DIR):
+            os.makedirs(RESOLVE_LUT_DIR)
+
+        lut_IO.ToCubeFile(self.lut, RESOLVE_LUT_DIR+'/'+self.lut.name+'.cube')
+
+        current_clip = timeline.GetCurrentVideoItem()
+        current_clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, self.lut.name+'.cube'))  #两个参数，node索引和lut路径
+
+        # 批量给时间线上的所有片段应用lut
+        # clips = timeline.GetItemListInTrack('video', 1)
+        # for clip in clips:
+        #     clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, 'self.lut.name+'.cube'))
 
 
     def auto_wb(self):
