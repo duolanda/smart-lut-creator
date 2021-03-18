@@ -677,13 +677,18 @@ class LutUI(QObject):
         project = projectManager.GetCurrentProject()
         timeline = project.GetCurrentTimeline()
 
-        if not os.path.exists(RESOLVE_LUT_DIR):
+        if not os.path.exists(RESOLVE_LUT_DIR):#如果不存在那个文件夹
             os.makedirs(RESOLVE_LUT_DIR)
 
-        lut_IO.ToCubeFile(self.lut, RESOLVE_LUT_DIR+'/'+self.lut.name+'.cube')
+        if os.path.exists(RESOLVE_LUT_DIR+'/'+self.lut.name+'.cube'):#如果存在同名文件
+            out_name = self.lut.name+str(time.time())[5:10]+'.cube'
+        else:
+            out_name = self.lut.name+'.cube'
+
+        lut_IO.ToCubeFile(self.lut, RESOLVE_LUT_DIR+'/'+out_name)
 
         current_clip = timeline.GetCurrentVideoItem()
-        current_clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, self.lut.name+'.cube'))  #两个参数，node索引和lut路径
+        current_clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, out_name))  #两个参数，node索引和lut路径
 
         # 批量给时间线上的所有片段应用lut
         # clips = timeline.GetItemListInTrack('video', 1)
