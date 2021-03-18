@@ -1,6 +1,8 @@
 import colour
+import numpy as np
 
 from lut import LUT
+from lut import LutM
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import cs_convert, gamut_convert, gamma_convert
 from lut_IO import FromCubeFile, FromNuke3DLFile, FromLustre3DLFile, ToCubeFile, ToNuke3DLFile, ToLustre3DLFile
@@ -31,6 +33,23 @@ def test_hald():
     # image_size = 512
     # name = 'lut'
     generate_HALD(lut_size, data_dir)
+
+
+def test_hald_np(lut_size):
+    """
+    生成色彩图，并将返回的 numpy 图片存到本地以供测试
+    """
+
+    lut = LutM(lut_size)
+    colors = lut.generate_colors()
+    image = np.zeros((1, lut.swatch_count, 3))
+
+    for i in range(len(image[0])):
+        image[0][i] = np.array(colors[i])
+
+    hald_img = np.float64(image/255)
+    colour.write_image(hald_img, 'test_hald.jpg')
+    return hald_img
 
 
 def test_compute():
@@ -181,4 +200,4 @@ def test_custom_wb():
 
 
 if __name__ == '__main__':
-    test_custom_wb()
+    test_hald_np(2)

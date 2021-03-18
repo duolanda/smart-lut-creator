@@ -224,7 +224,7 @@ class LutUI(QObject):
         self.preview = img
         self.zoomscale=1  
 
-        frame = QImage(img, img.shape[1], img.shape[0], QImage.Format_RGB888)
+        frame = QImage(img, img.shape[1], img.shape[0], img.shape[1]*3, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item = QGraphicsPixmapItem(pix) #创建像素图元
         self.scene = QGraphicsScene() #创建场景
@@ -504,7 +504,7 @@ class LutUI(QObject):
         img_out = apply_lut_np(self.lut, img_float)
         self.preview = img_out
 
-        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
+        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], img_out.shape[1]*3, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
 
