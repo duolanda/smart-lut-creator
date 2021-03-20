@@ -1,16 +1,4 @@
-import os
 import PySide6
-
-dirname = os.path.dirname(PySide6.__file__)
-plugin_path = os.path.join(dirname, 'plugins', 'platforms')
-os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = plugin_path
-
-'''
-上面的部分用来解决如下报错： 
-qt.qpa.plugin: Could not find the Qt platform plugin "windows" in ""
-This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-'''
-
 from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QInputDialog
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QEvent, QObject
@@ -19,7 +7,7 @@ from my_widget import myQGraphicsView
 from my_signal import mysgn
 from output_dialog import Output_Dialog
 
-
+import os
 import colour
 import numpy as np
 import time
