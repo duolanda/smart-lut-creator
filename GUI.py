@@ -63,6 +63,8 @@ class LutUI(QObject):
         self.ui.openImage.triggered.connect(self.img_window)
         self.ui.loadPrFrame.triggered.connect(self.load_frame_from_pr)
         self.ui.setDavinciLut.triggered.connect(self.set_davinci_lut)
+        self.ui.exportHALD.triggered.connect(self.export_HALD)
+        self.ui.loadHALD.triggered.connect(self.load_HALD)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -668,6 +670,9 @@ class LutUI(QObject):
         os.remove('./pr_frame.jpg')
 
     def set_davinci_lut(self):
+        '''
+        达芬奇那里必须要刷新一下才能生效，且从 16 开始才支持 setLUT
+        '''
         RESOLVE_LUT_DIR = 'C:/ProgramData/Blackmagic Design/DaVinci Resolve/Support/LUT/Custom'
 
         resolve = bmd.scriptapp("Resolve")
@@ -694,6 +699,33 @@ class LutUI(QObject):
         # clips = timeline.GetItemListInTrack('video', 1)
         # for clip in clips:
         #     clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, 'self.lut.name+'.cube'))
+
+
+    def export_HALD(self):
+        '''
+        导出一个大小为 64 的标准 HALD，供其他应用进行处理（加滤镜），再用 load_HALD 转为 LUT
+        '''
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出 HALD', './'+'HALD_64.png', 'png(*.png)')
+        if save_path[0] == '': 
+            return
+
+        hald_img = generate_HALD_np(64)
+        hald_img = hald_img.reshape(512, 512, 3)
+        colour.write_image(hald_img, save_path[0])
+        
+
+    def load_HALD(self):
+        '''
+        将 HALD 转为当前的 LUT
+        '''
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 HALD 图像文件', '.', "Image Files(*.jpg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
+        if openfile_name[0] == []: #如果用户什么也没选就什么也不做，不然下一步会报错
+            return
+
+        file_path = openfile_name[0][0]
+        hald_img = colour.read_image(file_path)
+        self.lut = compute_lut_np(hald_img, 64, 'HALD_in')
+        self.show_img()
 
 
     def auto_wb(self):

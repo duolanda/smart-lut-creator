@@ -372,6 +372,8 @@
     </property>
     <addaction name="loadPrFrame"/>
     <addaction name="setDavinciLut"/>
+    <addaction name="exportHALD"/>
+    <addaction name="loadHALD"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
@@ -389,6 +391,16 @@
   <action name="setDavinciLut">
    <property name="text">
     <string>将当前 LUT 应用到达芬奇</string>
+   </property>
+  </action>
+  <action name="exportHALD">
+   <property name="text">
+    <string>导出 HALD</string>
+   </property>
+  </action>
+  <action name="loadHALD">
+   <property name="text">
+    <string>将 HALD 转为 LUT</string>
    </property>
   </action>
  </widget>

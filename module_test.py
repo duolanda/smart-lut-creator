@@ -48,7 +48,7 @@ def test_hald_np(lut_size):
         image[0][i] = np.array(colors[i])
 
     hald_img = np.float64(image/255)
-    colour.write_image(hald_img, 'test_hald.jpg')
+    colour.write_image(hald_img, 'test_hald.png')
     return hald_img
 
 
