@@ -61,9 +61,9 @@ class LutUI(QObject):
         self.ui.zoomOutButton.clicked.connect(self.zoomout)
 
         #色彩空间转换
-        gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut']
+        gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut','Canon Cinema Gamut','Panasonic V-Gamut','BMDFilm 4K(Legacy)','Fuji F-Log Gamut','RedWideGamutRGB','DJI D-Gamut','GoPro ProTune Native']
         gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800']
-        wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D75']
+        wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D60', 'D75', 'BMDFilm 4K(Legacy)']
         self.ui.inGamut.addItems(gamut_list)
         self.ui.inGamma.addItems(gamma_list)
         self.ui.inWp.addItems(wp_list)
