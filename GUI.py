@@ -15,6 +15,8 @@ from shutil import copy
 import pymiere
 from pymiere import wrappers
 import DaVinciResolveScript as bmd
+import qtmodern.styles
+import qtmodern.windows
 from lut import LUT
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import gamma_convert, gamut_convert
@@ -444,7 +446,7 @@ class LutUI(QObject):
         完成色域/白点/gamma 相关转换
         '''
 
-        # print(time.time())
+        # print(time.perf_counter())
 
         if type(self.hald1) != type(None):
             hald_img = self.hald1
@@ -498,7 +500,7 @@ class LutUI(QObject):
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
 
-        # print(time.time())
+        # print(time.perf_counter())
 
 
 
@@ -681,7 +683,10 @@ class LutUI(QObject):
         lut_IO.ToCubeFile(self.lut, RESOLVE_LUT_DIR+'/'+out_name)
 
         current_clip = timeline.GetCurrentVideoItem()
-        current_clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, out_name))  #两个参数，node索引和lut路径
+        try:
+            current_clip.SetLUT(1, os.path.join(RESOLVE_LUT_DIR, out_name))  #两个参数，node索引和lut路径
+        except:
+            QMessageBox.information(self.ui, "抱歉", "该功能仅支持 v16.2.0 及更高版本的达芬奇", QMessageBox.Ok, QMessageBox.Ok)
 
         # 批量给时间线上的所有片段应用lut
         # clips = timeline.GetItemListInTrack('video', 1)
@@ -741,7 +746,10 @@ class LutUI(QObject):
 
 
 app = QApplication([])
-app.setStyle('WindowsVista')
+# app.setStyle('WindowsVista')
 lut_ui = LutUI()
+qtmodern.styles.dark(app) #qtmodern
+# mw = qtmodern.windows.ModernWindow(lut_ui.ui)
+# mw.show()
 lut_ui.ui.show()
 app.exec_()
