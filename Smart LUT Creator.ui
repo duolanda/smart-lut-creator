@@ -374,6 +374,7 @@
     <addaction name="setDavinciLut"/>
     <addaction name="exportHALD"/>
     <addaction name="loadHALD"/>
+    <addaction name="visualizeLUT"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
@@ -401,6 +402,11 @@
   <action name="loadHALD">
    <property name="text">
     <string>将 HALD 转为 LUT</string>
+   </property>
+  </action>
+  <action name="visualizeLUT">
+   <property name="text">
+    <string>LUT 可视化</string>
    </property>
   </action>
  </widget>

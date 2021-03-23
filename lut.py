@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import matplotlib.pyplot as plt 
+from mpl_toolkits.mplot3d import Axes3D
 
 from progress.bar import Bar
 
@@ -122,6 +124,12 @@ class Color:
 
 class LUT:
 	def __init__(self, lattice, name = "Untitled LUT", lattice_np = None):
+		'''
+		lattice：Color 对象表示的晶格点
+		cubeSize：LUT 大小，数字
+		name：LUT 名称，字符串
+		lattice_np：numpy 矩阵表示的晶格点，形状为(n,n,n,3)
+		'''
 		self.lattice = lattice
 		self.cubeSize = self.lattice.shape[0]
 		self.name = str(name)
@@ -140,13 +148,14 @@ class LUT:
 		'''
 		if name == None:
 			name = "HALD"+str(cubeSize)
+		HALD_data_reshape = np.array(HALD_data).reshape(cubeSize, cubeSize, cubeSize, 3)
 		HALDLattice = EmptyLatticeOfSize(cubeSize)
 		for b in range(cubeSize):
 			for g in range(cubeSize):
 				for r in range(cubeSize):
 					HALD_lattice = HALD_data[b*cubeSize*cubeSize+g*cubeSize+r]
 					HALDLattice[r, g, b] = Color(HALD_lattice[0], HALD_lattice[1], HALD_lattice[2])
-		return LUT(HALDLattice, name = name, lattice_np = np.array(HALD_data))	
+		return LUT(HALDLattice, name = name, lattice_np = HALD_data_reshape)	
 
 	
 
@@ -269,6 +278,30 @@ class LUT:
 		self.lattice_np = lut_np
 		return lut_np
 
+	def visualize(self, step):
+		'''
+		将 LUT 绘制到散点图上的函数
+		step 是采样间隔，全画上太多了
+		'''
+		size = self.cubeSize
+		lut = self.lattice_np
+
+		norm = 1.0 / (size - 1) #归一化系数
+		fig = plt.figure()
+		ax = Axes3D(fig)
+		for b in range(0, size, step):
+			for g in range(0, size, step):
+				r = np.arange(0, size, step)
+				ax.scatter(b * norm * np.ones(len(r)),
+						g * norm * np.ones(len(r)),
+						r * norm,
+						c=lut[b, g, r],
+						marker='o',
+						alpha=1)
+		ax.set_xlabel('B')
+		ax.set_ylabel('G')
+		ax.set_zlabel('R')
+		plt.show()
 
 	# 反求 lut 相关
 	def _ResizeAndAddToData(self, newCubeSize, data):

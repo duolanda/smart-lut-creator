@@ -55,6 +55,7 @@ class LutUI(QObject):
         self.ui.setDavinciLut.triggered.connect(self.set_davinci_lut)
         self.ui.exportHALD.triggered.connect(self.export_HALD)
         self.ui.loadHALD.triggered.connect(self.load_HALD)
+        self.ui.visualizeLUT.triggered.connect(self.vis_lut)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -720,6 +721,12 @@ class LutUI(QObject):
         self.lut = compute_lut_np(hald_img, 64, 'HALD_in')
         self.show_img()
 
+    def vis_lut(self):
+        '''
+        用 plt 绘制散点图，耗时较久
+        '''
+        step = int(self.lut.cubeSize/10)
+        self.lut.visualize(step)
 
     def auto_wb(self):
         global img_float

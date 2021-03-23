@@ -198,6 +198,10 @@ def test_custom_wb():
     rgb = colour.XYZ_to_sRGB(xyz) #只是能将开尔文转到 rgb 而已，并不能应用到图像上
     print(rgb)
 
+def test_vis_lut(step):
+    lut = FromCubeFile('test_lut/lattice_33.cube')
+    lut.visualize(step)
+
 
 if __name__ == '__main__':
-    test_hald_np(2)
+    test_vis_lut(1)
