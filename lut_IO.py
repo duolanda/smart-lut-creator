@@ -197,6 +197,59 @@ def FromCubeFile(lut_path):
     return LUT(lattice, name = name)
 
 
+def FromVltFile(lut_path):
+    with open(lut_path, 'rt') as f:
+        lut_lines = f.readlines()
+
+    data_line_index = 0
+    name = os.path.splitext(os.path.basename(lut_path))[0]
+    size = -1
+
+    for i in range(len(lut_lines)):
+        line = lut_lines[i]
+        if line.startswith('# panasonic vlt file version'):
+            ver = float(line.split()[5])
+            continue
+        if line.startswith('# source vlt file ""'):
+            source = line.split('"')[1]
+            continue
+        if line.startswith('LUT_3D_SIZE'):
+            size = int(line.split()[1])
+            continue
+
+        try:
+            float(line.partition(' ')[0])
+        except ValueError:
+            pass
+        else:
+            # 数据行开始
+            data_line_index = i
+            break
+            
+    if size == -1:
+        raise NameError("No size found in the file")
+
+    lattice = np.zeros((size, size, size), object)
+    current_index = 0
+    for line in lut_lines[data_line_index:]:
+        if line.startswith('#'):
+            continue
+        if len(line) > 0 and len(line.split()) == 3:
+            #lut 数据行
+            red_value = line.split()[0]
+            green_value = line.split()[1]
+            blue_value = line.split()[2]
+
+            red_index = current_index % size
+            green_index = ( (current_index % (size*size)) // (size) ) 
+            blue_index = current_index // (size*size)
+
+            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = 12)
+            current_index += 1
+
+    return LUT(lattice, name = name)
+
+
 def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
     cubeSize = lut.cubeSize
     inputDepth = math.log(cubeSize-1, 2)
@@ -248,6 +301,27 @@ def ToCubeFile(lut, cubeFileOutPath):
 
     cubeFile.close()
 
+def ToVltFile(lut, file_path):
+    size = lut.cubeSize
+    vlt_file = open(file_path, 'w')
+    vlt_file.write("# panasonic vlt file version 1.0" + "\n")
+    vlt_file.write("# source vlt file \"\"" + "\n")
+    vlt_file.write("LUT_3D_SIZE " + str(size) + "\n")
+    vlt_file.write("\n")
+    
+    for current_index in range(0, size**3):
+        red_index = current_index % size
+        green_index = ( (current_index % (size*size)) // (size) )
+        blue_index = current_index // (size*size)
+
+        latticePointColor = lut.lattice[red_index, green_index, blue_index].Clamped01()
+        
+        vlt_file.write(latticePointColor.FormattedAsInteger(4095))
+        
+        if(current_index != size**3 - 1):
+            vlt_file.write("\n")
+
+    vlt_file.close()
 
 if __name__ == '__main__': 
     in_lut = FromCubeFile('test_lut/Lattice_cube3D_Resolve_33.cube')

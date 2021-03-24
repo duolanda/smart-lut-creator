@@ -46,9 +46,10 @@ class Output_Dialog(QDialog):
         self.label_2.setText("文件格式")
 
         self.formatComboBox = QComboBox(Dialog)
+        self.formatComboBox.setObjectName("formatComboBox")
         self.formatComboBox.addItem("Cube LUT (.cube)")
         self.formatComboBox.addItem("Autodesk 3D LUT (.3dl)")
-        self.formatComboBox.setObjectName("formatComboBox")
+        self.formatComboBox.addItem("Panasonic VLT 3D LUT (.vlt)")
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
@@ -77,11 +78,14 @@ class Output_Dialog(QDialog):
 
         self.stack1 = QWidget()
         self.stack2 = QWidget()
+        self.stack3 = QWidget()
         self.stack1UI()
         self.stack2UI()
+        self.stack3UI()
         self.Stack = QStackedWidget(self)
         self.Stack.addWidget(self.stack1)
         self.Stack.addWidget(self.stack2)
+        self.Stack.addWidget(self.stack3)
 
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
@@ -107,56 +111,56 @@ class Output_Dialog(QDialog):
     def stack2UI(self):
         self.ext = '.3dl'
 
-        self.label_3 = QLabel()
-        self.label_3.setObjectName("label_3")
-        self.label_3.setText("类型")
+        label_3 = QLabel()
+        label_3.setObjectName("label_3")
+        label_3.setText("类型")
 
-        self.typeComboBox = QComboBox()
-        self.typeComboBox.setObjectName("typeComboBox")
-        self.typeComboBox.addItem("Lustre")
-        self.typeComboBox.addItem("Nuke")
-        self.typeComboBox.currentIndexChanged.connect(self.change_3dl_option)
+        typeComboBox = QComboBox()
+        typeComboBox.setObjectName("typeComboBox")
+        typeComboBox.addItem("Lustre")
+        typeComboBox.addItem("Nuke")
+        typeComboBox.currentIndexChanged.connect(self.change_3dl_option)
 
-        self.label_4 = QLabel()
-        self.label_4.setObjectName("label_4")
-        self.label_4.setText("尺寸")
+        label_4 = QLabel()
+        label_4.setObjectName("label_4")
+        label_4.setText("尺寸")
 
-        self.sizeComboBox = QComboBox()
-        self.sizeComboBox.setObjectName("sizeComboBox")
-        self.sizeComboBox.addItem("17")
-        self.sizeComboBox.addItem("33")
-        self.sizeComboBox.addItem("65")
-
-
-        self.label_5 = QLabel()
-        self.label_5.setObjectName("label_5")
-        self.label_5.setText("输出深度")
-
-        self.depthComboBox = QComboBox()
-        self.depthComboBox.setObjectName("depthComboBox")
-        self.depthComboBox.addItem("12-bit")
-        self.depthComboBox.addItem("16-bit")
+        sizeComboBox = QComboBox()
+        sizeComboBox.setObjectName("sizeComboBox")
+        sizeComboBox.addItem("17")
+        sizeComboBox.addItem("33")
+        sizeComboBox.addItem("65")
 
 
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        label_5 = QLabel()
+        label_5.setObjectName("label_5")
+        label_5.setText("输出深度")
+
+        depthComboBox = QComboBox()
+        depthComboBox.setObjectName("depthComboBox")
+        depthComboBox.addItem("12-bit")
+        depthComboBox.addItem("16-bit")
+
+
+        hbox = QHBoxLayout()
+        hbox.setObjectName("horizontalLayout_3")
+        hbox2 = QHBoxLayout()
+        hbox2.setObjectName("horizontalLayout_4")
+        hbox3 = QHBoxLayout()
+        hbox3.setObjectName("horizontalLayout_5")
 
         vbox = QVBoxLayout()
 
-        self.horizontalLayout_3.addWidget(self.label_3)
-        self.horizontalLayout_3.addWidget(self.typeComboBox)
-        self.horizontalLayout_4.addWidget(self.label_4)
-        self.horizontalLayout_4.addWidget(self.sizeComboBox)
-        self.horizontalLayout_5.addWidget(self.label_5)
-        self.horizontalLayout_5.addWidget(self.depthComboBox)
+        hbox.addWidget(label_3)
+        hbox.addWidget(typeComboBox)
+        hbox2.addWidget(label_4)
+        hbox2.addWidget(sizeComboBox)
+        hbox3.addWidget(label_5)
+        hbox3.addWidget(depthComboBox)
 
-        vbox.addLayout(self.horizontalLayout_3)
-        vbox.addLayout(self.horizontalLayout_4)
-        vbox.addLayout(self.horizontalLayout_5)
+        vbox.addLayout(hbox)
+        vbox.addLayout(hbox2)
+        vbox.addLayout(hbox3)
 
         self.stack2.setLayout(vbox)
 
@@ -166,7 +170,27 @@ class Output_Dialog(QDialog):
         file_name[-1] = self.ext[1:]
         self.filePathLineEdit.setText('.'.join(file_name))
 
-            
+    def stack3UI(self):
+        self.ext = '.vlt'
+
+        label_6 = QLabel()
+        label_6.setObjectName("label_6")
+        label_6.setText("尺寸")
+
+        sizeComboBox = QComboBox()
+        sizeComboBox.setObjectName("sizeComboBox")
+        sizeComboBox.addItem("17")
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(label_6)
+        hbox.addWidget(sizeComboBox)
+        self.stack3.setLayout(hbox)
+
+
+        file_name = self.filePathLineEdit.text()
+        file_name = file_name.split('.')
+        file_name[-1] = self.ext[1:]
+        self.filePathLineEdit.setText('.'.join(file_name))
 
     def change_3dl_option(self):
         if self.typeComboBox.currentText() == "Lustre":
@@ -196,13 +220,15 @@ class Output_Dialog(QDialog):
 
         if self.ext == ".cube":
             self.output_info = [file_path, file_ext]
-            
 
         elif self.ext == ".3dl":
             file_type = self.typeComboBox.currentText()
             file_size = self.sizeComboBox.currentText()
             file_depth = self.depthComboBox.currentText()
             self.output_info = [file_path, file_ext, file_type, file_size, file_depth]
+
+        elif self.ext == ".vlt":
+            self.output_info = [file_path, file_ext]
 
         self.close()
 

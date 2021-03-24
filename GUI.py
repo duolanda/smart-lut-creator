@@ -63,7 +63,7 @@ class LutUI(QObject):
 
         #色彩空间转换
         gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut','Canon Cinema Gamut','Panasonic V-Gamut','BMDFilm 4K(Legacy)','Fuji F-Log Gamut','RedWideGamutRGB','DJI D-Gamut','GoPro ProTune Native']
-        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800']
+        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800', 'Canon C-Log', 'Panasonic V-Log', 'Fujifilm F-Log']
         wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D60', 'D75', 'BMDFilm 4K(Legacy)']
         self.ui.inGamut.addItems(gamut_list)
         self.ui.inGamma.addItems(gamma_list)
@@ -540,7 +540,7 @@ class LutUI(QObject):
         '''
         打开外部 LUT，返回读取到的 lut 对象
         '''
-        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl)') #.代表是当前目录
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 LUT 文件', '.', 'All Files(*);;Davinci Cube(*.cube);;Nuke 3dl(*.3dl);;Lustre 3dl(*.3dl);;Panasonic vlt(*.vlt)') #.代表是当前目录
         if openfile_name[0] == []: 
             return None
 
@@ -550,6 +550,9 @@ class LutUI(QObject):
 
         if ext_name == 'cube':
             return lut_IO.FromCubeFile(file_path)
+
+        elif ext_name == 'vlt':
+            return lut_IO.FromVltFile(file_path)
            
         elif ext_name == '3dl':
             with open(file_path, 'rt') as f:
@@ -610,6 +613,9 @@ class LutUI(QObject):
             ext_name = output_info[1][1:]
             if ext_name == 'cube':
                 lut_IO.ToCubeFile(self.lut, save_path)
+            elif ext_name == 'vlt':
+                output_lut = self.lut.Resize(17, rename = False)
+                lut_IO.ToVltFile(output_lut, save_path)
             elif ext_name == '3dl':
                 lut_type = output_info[2]
                 lut_size = int(output_info[3])
@@ -725,7 +731,7 @@ class LutUI(QObject):
         '''
         用 plt 绘制散点图，耗时较久
         '''
-        step = int(self.lut.cubeSize/10)
+        step = round(self.lut.cubeSize/10)
         self.lut.visualize(step)
 
     def auto_wb(self):

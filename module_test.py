@@ -5,7 +5,7 @@ from lut import LUT
 from lut import LutM
 from lut_color_enhance import rgb_color_enhance
 from lut_color_space import cs_convert, gamut_convert, gamma_convert
-from lut_IO import FromCubeFile, FromNuke3DLFile, FromLustre3DLFile, ToCubeFile, ToNuke3DLFile, ToLustre3DLFile
+from lut_IO import FromCubeFile, FromNuke3DLFile, FromLustre3DLFile, FromVltFile,ToCubeFile, ToNuke3DLFile, ToLustre3DLFile, ToVltFile
 from auto_cb import simplest_cb
 
 def test_hald():
@@ -192,16 +192,23 @@ def test_auto_cb():
     cv2.imshow("after", out)
     cv2.waitKey(0)
 
+
 def test_custom_wb():
     xy = colour.CCT_to_xy(5500)
     xyz = colour.xy_to_XYZ(xy)
     rgb = colour.XYZ_to_sRGB(xyz) #只是能将开尔文转到 rgb 而已，并不能应用到图像上
     print(rgb)
 
+
 def test_vis_lut(step):
     lut = FromCubeFile('test_lut/lattice_33.cube')
     lut.visualize(step)
 
+def test_io():
+    lut = FromVltFile('test_lut/Lattice_pansonicVLT3D_v1.0_17.vlt')
+    print(lut.lattice_np)
+    ToVltFile(lut, 'test_lut/my_pansonicVLT3D_v1.0_17.vlt')
+
 
 if __name__ == '__main__':
-    test_vis_lut(1)
+    test_io()

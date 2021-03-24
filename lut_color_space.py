@@ -67,6 +67,50 @@ def logc(img, to_linear):
         img = np.select([img > cut, True], choicelist)
     return img
 
+def clog(img, to_linear):
+    if to_linear:
+        choicelist = [(10**((img - 0.1251224801564)/0.45310179472141) - 1)/10.1596, 
+                    (img*1023-95)*0.01125/(171.2102946929-95)]
+        img = np.select([img >= 0.00391002619746, True], choicelist)
+    else:
+        choicelist = [(0.45310179472141 * np.log10((img * 10.1596) + 1)/np.log(10)) + 0.1251224801564, #np.log 是 ln
+                    (img + 0.0467265867)/0.3734467748]
+        img = np.select([img >= -0.0452664, True], choicelist)
+    return img
+
+def vlog(img, to_linear):
+    b = 0.00873
+    c = 0.241514
+    d = 0.598206
+    if to_linear:
+        choicelist = [10**((img-d)/c)-b, 
+                    (img-0.125)/5.6]
+        img = np.select([img >= 0.181, True], choicelist)
+    else:
+        choicelist = [c*np.log10(img+b)+d,
+                    5.6*img+0.125]
+        img = np.select([img >= 0.01, True], choicelist)
+    return img
+
+def flog(img, to_linear):
+    a = 0.555556
+    b = 0.009468
+    c = 0.344676
+    d = 0.790453
+    e = 8.735631
+    f = 0.092864
+    if to_linear:
+        choicelist = [(10**((img-d)/c))/a-b/a, 
+                    (img-f)/e]
+        img = np.select([img >= 0.100537775223865, True], choicelist)
+    else:
+        choicelist = [c*np.log10(a*img+b)+d,
+                    e*img+f]
+        img = np.select([img >= 0.00089, True], choicelist)
+    return img
+
+
+
 def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, clip=True):
     '''
     支持色彩空间：srgb, xyz, lab, hsv, ycbcr
@@ -201,6 +245,12 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
         img = rec709(img, to_linear = True)
     elif input_gamma == 'Linear':
         img = img ** 1 
+    elif input_gamma == 'Canon C-Log':
+        img = clog(img, to_linear = True)
+    elif input_gamma == 'Panasonic V-Log':
+        img = vlog(img, to_linear = True)
+    elif input_gamma == 'Fujifilm F-Log':
+        img = flog(img, to_linear = True)
     else:
         img = img ** input_gamma
 
@@ -212,6 +262,12 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
         img = srgb(img, to_linear = False)
     elif output_gamma == 'Rec.709':
         img = rec709(img, to_linear = False)
+    elif output_gamma == 'Canon C-Log':
+        img = clog(img, to_linear = False)
+    elif output_gamma == 'Panasonic V-Log':
+        img = vlog(img, to_linear = False)
+    elif output_gamma == 'Fujifilm F-Log':
+        img = flog(img, to_linear = False)
     elif output_gamma == 'Linear':
         img = img ** 1 
     else:
