@@ -13,16 +13,15 @@ def clamp(value, min, max):
 		return max
 	return value
 
-def nearst_interpolation(lut, r, g, b):
-    '''
-    最近邻插值
-    '''
-    r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
+def nearst_interpolation_np(lut, r, g, b):
+    r,b = b,r
 
     l = lut.lattice_np
-    output = l[round(r)][round(g)][round(b)]
+    r = np.round(r).astype(np.uint8)
+    g = np.round(g).astype(np.uint8)
+    b = np.round(b).astype(np.uint8)
+    output = l[r,g,b]
     return output
-
 
 def trilinear_interpolation(lut, r, g, b):
     '''
@@ -34,20 +33,25 @@ def trilinear_interpolation(lut, r, g, b):
 
     size = lut.cubeSize
 
-    r0 = clamp(int(math.floor(r)), 0, size-1)
-    r1 = clamp(r0+1, 0, size-1)
+    r0 = np.clip(np.floor(r).astype(np.uint8), 0, size-1)
+    r1 = np.clip(r0+1, 0, size-1)
 
-    g0 = clamp(int(math.floor(g)), 0, size-1)
-    g1 = clamp(g0+1, 0, size-1)
+    g0 = np.clip(np.floor(g).astype(np.uint8), 0, size-1)
+    g1 = np.clip(g0+1, 0, size-1)
 
-    b0 = clamp(int(math.floor(b)), 0, size-1)
-    b1 = clamp(b0+1, 0, size-1)
+    b0 = np.clip(np.floor(b).astype(np.uint8), 0, size-1)
+    b1 = np.clip(b0+1, 0, size-1)
 
     l = lut.lattice_np
 
     fr = (r-r0)/(r1-r0)
     fg = (g-g0)/(g1-g0)
     fb = (b-b0)/(b1-b0)
+
+    fr = fr[:,:,np.newaxis] #增加一个维度，方便广播
+    fg = fg[:,:,np.newaxis] 
+    fb = fb[:,:,np.newaxis] 
+
 
     C000 = l[r0, g0, b0]
     C010 = l[r0, g1, b0]
@@ -130,14 +134,14 @@ def tetrahedral_interpolation(lut, r, g, b):
 
 def apply_lut(lut, img, method):
     size = lut.cubeSize
+
+    r,g,b = img[:,:,0], img[:,:,1], img[:,:,2]
+    r = r * (size-1) 
+    g = g * (size-1) 
+    b = b * (size-1) 
+
     if method == 'tri':
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
-                r,g,b = img[i][j]
-                r = r * (size-1) 
-                g = g * (size-1) 
-                b = b * (size-1) 
-                img[i][j] = trilinear_interpolation(lut,r,g,b)
+        img = trilinear_interpolation(lut,r,g,b)
     elif method == 'tet':
         for i in range(img.shape[0]):
             for j in range(img.shape[1]):
@@ -147,19 +151,15 @@ def apply_lut(lut, img, method):
                 b = b * (size-1) 
                 img[i][j] = tetrahedral_interpolation(lut,r,g,b)
     elif method == 'near':
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
-                r,g,b = img[i][j]
-                r = r * (size-1) 
-                g = g * (size-1) 
-                b = b * (size-1) 
-                img[i][j] = nearst_interpolation(lut,r,g,b)
+        img = nearst_interpolation_np(lut,r,g,b)
+
+
     write_image(img, 'new.png')
 
 
 
 
-img = read_image('test_img/Color_Checker.png')
+img = read_image('test_img/lena_std.tif')
 lut = FromCubeFile('test_lut/Lattice_33.cube')
 # output = tetrahedral_interpolation(lut, 1.2, 1.5, 1.7)
 # print(output)
@@ -169,5 +169,5 @@ lut = FromCubeFile('test_lut/Lattice_33.cube')
 # print(output3)
 
 old = time.perf_counter()
-apply_lut(lut, img, 'near')
+apply_lut(lut, img, 'tri')
 print(time.perf_counter()-old)
