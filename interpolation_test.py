@@ -25,8 +25,7 @@ def nearst_interpolation_np(lut, r, g, b):
 
 def trilinear_interpolation(lut, r, g, b):
     '''
-    Gets the interpolated color at an interpolated lattice point.
-    三线性插值
+    三线性插值，但是有的地方会有黑点，经证实不是 numpy 的问题，原因不明
     '''
 
     r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
@@ -132,6 +131,53 @@ def tetrahedral_interpolation(lut, r, g, b):
                     +(fb)    * l[r1][g1][b1]
     return output
 
+def tetrahedral_interpolation_np(lut, r, g, b):
+    '''
+    四面体插值
+    r,g,b 是要插值的晶格点，不是具体的颜色值，一般是个浮点数
+    '''
+    r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
+
+    size = lut.cubeSize
+
+    l = lut.lattice_np
+
+    r0 = np.clip(np.floor(r).astype(np.uint8), 0, size-1)
+    r1 = np.clip(r0+1, 0, size-1)
+
+    g0 = np.clip(np.floor(g).astype(np.uint8), 0, size-1)
+    g1 = np.clip(g0+1, 0, size-1)
+
+    b0 = np.clip(np.floor(b).astype(np.uint8), 0, size-1)
+    b1 = np.clip(b0+1, 0, size-1)
+
+    fr = (r-r0)/(r1-r0)
+    fg = (g-g0)/(g1-g0)
+    fb = (b-b0)/(b1-b0)
+
+    fr = fr[:,:,np.newaxis] 
+    fg = fg[:,:,np.newaxis] 
+    fb = fb[:,:,np.newaxis] 
+
+    output = np.select([
+        np.logical_and(fr > fg, fg > fb),
+        np.logical_and(fr > fg, fr > fb),
+        np.logical_and(fr > fg, np.logical_and(fg <= fb, fr <= fb)),
+        np.logical_and(fr <= fg, fb > fg),
+        np.logical_and(fr <= fg, fb > fr),
+        np.logical_and(fr <= fg, np.logical_and(fb <= fg, fb <= fr)),
+    ], [
+        (1-fr)*l[r0,g0,b0] + (fr-fg)*l[r1,g0,b0] + (fg-fb)*l[r1,g1,b0] + (fb)*l[r1,g1,b1],
+        (1-fr)*l[r0,g0,b0] + (fr-fb)*l[r1,g0,b0] + (fb-fg)*l[r1,g0,b1] + (fg)*l[r1,g1,b1],
+        (1-fb)*l[r0,g0,b0] + (fb-fr)*l[r0,g0,b1] + (fr-fg)*l[r1,g0,b1] + (fg)*l[r1,g1,b1],
+        (1-fb)*l[r0,g0,b0] + (fb-fg)*l[r0,g0,b1] + (fg-fr)*l[r0,g1,b1] + (fr)*l[r1,g1,b1],
+        (1-fg)*l[r0,g0,b0] + (fg-fb)*l[r0,g1,b0] + (fb-fr)*l[r0,g1,b1] + (fr)*l[r1,g1,b1],
+        (1-fg)*l[r0,g0,b0] + (fg-fr)*l[r0,g1,b0] + (fr-fb)*l[r1,g1,b0] + (fb)*l[r1,g1,b1],
+    ])
+    
+    return output
+
+
 def apply_lut(lut, img, method):
     size = lut.cubeSize
 
@@ -143,13 +189,14 @@ def apply_lut(lut, img, method):
     if method == 'tri':
         img = trilinear_interpolation(lut,r,g,b)
     elif method == 'tet':
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
-                r,g,b = img[i][j]
-                r = r * (size-1) 
-                g = g * (size-1) 
-                b = b * (size-1) 
-                img[i][j] = tetrahedral_interpolation(lut,r,g,b)
+        # for i in range(img.shape[0]):
+        #     for j in range(img.shape[1]):
+        #         r,g,b = img[i][j]
+        #         r = r * (size-1) 
+        #         g = g * (size-1) 
+        #         b = b * (size-1) 
+        #         img[i][j] = tetrahedral_interpolation(lut,r,g,b)
+        img = tetrahedral_interpolation_np(lut,r,g,b)
     elif method == 'near':
         img = nearst_interpolation_np(lut,r,g,b)
 
@@ -159,7 +206,7 @@ def apply_lut(lut, img, method):
 
 
 
-img = read_image('test_img/lena_std.tif')
+img = read_image('test_img/Color_Checker.png')
 lut = FromCubeFile('test_lut/Lattice_33.cube')
 # output = tetrahedral_interpolation(lut, 1.2, 1.5, 1.7)
 # print(output)
