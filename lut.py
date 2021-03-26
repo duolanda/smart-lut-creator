@@ -182,6 +182,7 @@ class LUT:
 	def ColorAtInterpolatedLatticePoint(self, redPoint, greenPoint, bluePoint):
 		"""
 		Gets the interpolated color at an interpolated lattice point.
+		三线性插值
 		"""
 		cubeSize = self.cubeSize
 
