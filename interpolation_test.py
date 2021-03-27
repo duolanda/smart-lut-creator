@@ -47,6 +47,11 @@ def trilinear_interpolation(lut, r, g, b):
     fg = (g-g0)/(g1-g0)
     fb = (b-b0)/(b1-b0)
 
+    fr[np.isnan(fr)]=1 #r = size-1 时会出现 0/0 得 nan，这些应该为 1
+    fg[np.isnan(fg)]=1
+    fb[np.isnan(fb)]=1
+
+
     fr = fr[:,:,np.newaxis] #增加一个维度，方便广播
     fg = fg[:,:,np.newaxis] 
     fb = fb[:,:,np.newaxis] 
@@ -155,6 +160,10 @@ def tetrahedral_interpolation_np(lut, r, g, b):
     fg = (g-g0)/(g1-g0)
     fb = (b-b0)/(b1-b0)
 
+    fr[np.isnan(fr)]=1 
+    fg[np.isnan(fg)]=1
+    fb[np.isnan(fb)]=1
+
     fr = fr[:,:,np.newaxis] 
     fg = fg[:,:,np.newaxis] 
     fb = fb[:,:,np.newaxis] 
@@ -179,6 +188,12 @@ def tetrahedral_interpolation_np(lut, r, g, b):
 
 
 def apply_lut(lut, img, method):
+    '''
+    使用不同的插值方法将 lut 应用到图片上
+    - near：最近邻
+    - tri：三线性插值
+    - tet：四面体插值
+    '''
     size = lut.cubeSize
 
     r,g,b = img[:,:,0], img[:,:,1], img[:,:,2]
@@ -206,8 +221,8 @@ def apply_lut(lut, img, method):
 
 
 
-img = read_image('test_img/Color_Checker.png')
-lut = FromCubeFile('test_lut/Lattice_33.cube')
+img = read_image('test_img/Alexa.jpg')
+lut = FromCubeFile('test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube')
 # output = tetrahedral_interpolation(lut, 1.2, 1.5, 1.7)
 # print(output)
 # output2 = trilinear_interpolation(lut, 1.2, 1.5, 1.7)
@@ -216,5 +231,5 @@ lut = FromCubeFile('test_lut/Lattice_33.cube')
 # print(output3)
 
 old = time.perf_counter()
-apply_lut(lut, img, 'tri')
+apply_lut(lut, img, 'near')
 print(time.perf_counter()-old)
