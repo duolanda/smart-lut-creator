@@ -144,7 +144,10 @@ def FromCubeFile(lut_path):
     for i in range(len(lut_lines)):
         line = lut_lines[i]
         if line.startswith('TITLE'):
-            name = line.split('"')[1]
+            try: #有的 lut TITLE 后是空的，此时会报错
+                name = line.split('"')[1] 
+            except:
+                name = 'untitled'
             continue
         if line.startswith('LUT_3D_SIZE'):
             size = int(line.split()[1])

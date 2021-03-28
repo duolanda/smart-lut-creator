@@ -204,13 +204,6 @@ def apply_lut(lut, img, method):
     if method == 'tri':
         img = trilinear_interpolation(lut,r,g,b)
     elif method == 'tet':
-        # for i in range(img.shape[0]):
-        #     for j in range(img.shape[1]):
-        #         r,g,b = img[i][j]
-        #         r = r * (size-1) 
-        #         g = g * (size-1) 
-        #         b = b * (size-1) 
-        #         img[i][j] = tetrahedral_interpolation(lut,r,g,b)
         img = tetrahedral_interpolation_np(lut,r,g,b)
     elif method == 'near':
         img = nearst_interpolation_np(lut,r,g,b)
@@ -221,8 +214,8 @@ def apply_lut(lut, img, method):
 
 
 
-img = read_image('test_img/Alexa.jpg')
-lut = FromCubeFile('test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube')
+img = read_image('test_img/s-log.tif')
+lut = FromCubeFile('test_lut/From_SLog2SGumut_To_LC-709_.cube')
 # output = tetrahedral_interpolation(lut, 1.2, 1.5, 1.7)
 # print(output)
 # output2 = trilinear_interpolation(lut, 1.2, 1.5, 1.7)
@@ -231,5 +224,5 @@ lut = FromCubeFile('test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube')
 # print(output3)
 
 old = time.perf_counter()
-apply_lut(lut, img, 'near')
+apply_lut(lut, img, 'tet')
 print(time.perf_counter()-old)

@@ -289,6 +289,7 @@ class LUT:
 
 		norm = 1.0 / (size - 1) #归一化系数
 		fig = plt.figure()
+		fig.canvas.set_window_title('LUT 可视化')
 		ax = Axes3D(fig)
 		for b in range(0, size, step):
 			for g in range(0, size, step):

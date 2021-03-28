@@ -756,12 +756,13 @@ class LutUI(QObject):
 
         self.hald1 = hald_out
         self.hald2 = hald_out
+        
 
 
 app = QApplication([])
 # app.setStyle('WindowsVista')
 lut_ui = LutUI()
-qtmodern.styles.dark(app) #qtmodern
+qtmodern.styles.dark(app) #qtmodern，dark 改成 light 就是日间模式
 # mw = qtmodern.windows.ModernWindow(lut_ui.ui)
 # mw.show()
 lut_ui.ui.show()
