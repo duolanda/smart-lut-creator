@@ -140,11 +140,6 @@ class LutUI(QObject):
 
 
 
-
-
-
-        
-
     def init_color_enhence(self):
         # 滑块只支持 int，所以要做个映射，滑块-100~100 对应文本框 -1~1
         global enhence_list
@@ -527,7 +522,7 @@ class LutUI(QObject):
 
     def add_lut(self):
         value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（2~65）:", self.lut.cubeSize, 2, 65)
-        if ok and value != self.lut.cubeSize:
+        if ok:
             self.hald_img = generate_HALD_np(value)
             self.lut = compute_lut_np(self.hald_img, value, '未命名')
             self.lut_path = None
