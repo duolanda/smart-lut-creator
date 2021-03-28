@@ -109,31 +109,31 @@ class Output_Dialog(QDialog):
         label_3.setObjectName("label_3")
         label_3.setText("类型")
 
-        typeComboBox = QComboBox()
-        typeComboBox.setObjectName("typeComboBox")
-        typeComboBox.addItem("Lustre")
-        typeComboBox.addItem("Nuke")
-        typeComboBox.currentIndexChanged.connect(self.change_3dl_option)
+        self.typeComboBox = QComboBox()
+        self.typeComboBox.setObjectName("typeComboBox")
+        self.typeComboBox.addItem("Lustre")
+        self.typeComboBox.addItem("Nuke")
+        self.typeComboBox.currentIndexChanged.connect(self.change_3dl_option)
 
         label_4 = QLabel()
         label_4.setObjectName("label_4")
         label_4.setText("尺寸")
 
-        sizeComboBox = QComboBox()
-        sizeComboBox.setObjectName("sizeComboBox")
-        sizeComboBox.addItem("17")
-        sizeComboBox.addItem("33")
-        sizeComboBox.addItem("65")
+        self.sizeComboBox = QComboBox()
+        self.sizeComboBox.setObjectName("sizeComboBox")
+        self.sizeComboBox.addItem("17")
+        self.sizeComboBox.addItem("33")
+        self.sizeComboBox.addItem("65")
 
 
         label_5 = QLabel()
         label_5.setObjectName("label_5")
         label_5.setText("输出深度")
 
-        depthComboBox = QComboBox()
-        depthComboBox.setObjectName("depthComboBox")
-        depthComboBox.addItem("12-bit")
-        depthComboBox.addItem("16-bit")
+        self.depthComboBox = QComboBox()
+        self.depthComboBox.setObjectName("depthComboBox")
+        self.depthComboBox.addItem("12-bit")
+        self.depthComboBox.addItem("16-bit")
 
 
         hbox = QHBoxLayout()
@@ -146,11 +146,11 @@ class Output_Dialog(QDialog):
         vbox = QVBoxLayout()
 
         hbox.addWidget(label_3)
-        hbox.addWidget(typeComboBox)
+        hbox.addWidget(self.typeComboBox)
         hbox2.addWidget(label_4)
-        hbox2.addWidget(sizeComboBox)
+        hbox2.addWidget(self.sizeComboBox)
         hbox3.addWidget(label_5)
-        hbox3.addWidget(depthComboBox)
+        hbox3.addWidget(self.depthComboBox)
 
         vbox.addLayout(hbox)
         vbox.addLayout(hbox2)
