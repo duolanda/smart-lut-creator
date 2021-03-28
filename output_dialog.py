@@ -26,7 +26,6 @@ class Output_Dialog(QDialog):
         Dialog.setWindowTitle("LUT 导出")
         Dialog.resize(400, 300)
 
-        self.ext = '.cube'
         self.output_info = []
 
         self.label = QLabel(Dialog)
@@ -94,7 +93,7 @@ class Output_Dialog(QDialog):
 
         self.setLayout(self.verticalLayout)
 
-        
+        self.ext = '.cube'
     
     def stack1UI(self):
         self.ext = '.cube'
@@ -102,11 +101,6 @@ class Output_Dialog(QDialog):
         hbox = QHBoxLayout() #其实这里不用放什么东西，这里就占个位
         self.stack1.setLayout(hbox)
 
-
-        file_name = self.filePathLineEdit.text()
-        file_name = file_name.split('.')
-        file_name[-1] = self.ext[1:]
-        self.filePathLineEdit.setText('.'.join(file_name))
     
     def stack2UI(self):
         self.ext = '.3dl'
@@ -165,11 +159,6 @@ class Output_Dialog(QDialog):
         self.stack2.setLayout(vbox)
 
 
-        file_name = self.filePathLineEdit.text()
-        file_name = file_name.split('.')
-        file_name[-1] = self.ext[1:]
-        self.filePathLineEdit.setText('.'.join(file_name))
-
     def stack3UI(self):
         self.ext = '.vlt'
 
@@ -186,11 +175,6 @@ class Output_Dialog(QDialog):
         hbox.addWidget(sizeComboBox)
         self.stack3.setLayout(hbox)
 
-
-        file_name = self.filePathLineEdit.text()
-        file_name = file_name.split('.')
-        file_name[-1] = self.ext[1:]
-        self.filePathLineEdit.setText('.'.join(file_name))
 
     def change_3dl_option(self):
         if self.typeComboBox.currentText() == "Lustre":
@@ -236,8 +220,19 @@ class Output_Dialog(QDialog):
         return self.output_info
 
     def display(self,i):
-        self.Stack.setCurrentIndex(i)        
+        self.Stack.setCurrentIndex(i)  
+        index = self.formatComboBox.currentIndex()
+        if index == 0:
+            self.ext = ".cube"
+        elif index == 1:
+            self.ext = ".3dl"
+        elif index == 2:
+            self.ext = ".vlt"
 
+        file_name = self.filePathLineEdit.text()
+        file_name = file_name.split('.')
+        file_name[-1] = self.ext[1:]
+        self.filePathLineEdit.setText('.'.join(file_name))
 
 if __name__ == '__main__':
     app = QApplication()
