@@ -94,13 +94,13 @@ class LutUI(QObject):
         # 一级校色滑块
         self.init_color_enhence()
 
-        self.ui.brightnessSlider.valueChanged.connect(lambda: self.brightness_edit()) #用lambda传参
-        self.ui.contrastSlider.valueChanged.connect(lambda: self.contrast_edit())
-        self.ui.exposureSlider.valueChanged.connect(lambda: self.exposure_edit())
-        self.ui.saturationSlider.valueChanged.connect(lambda: self.saturation_edit())
-        self.ui.vibranceSlider.valueChanged.connect(lambda: self.vibrance_edit())
-        self.ui.warmthSlider.valueChanged.connect(lambda: self.warmth_edit())
-        self.ui.tintSlider.valueChanged.connect(lambda: self.tint_edit())
+        self.ui.brightnessSlider.sliderReleased.connect(lambda: self.brightness_edit()) #用lambda传参
+        self.ui.contrastSlider.sliderReleased.connect(lambda: self.contrast_edit())
+        self.ui.exposureSlider.sliderReleased.connect(lambda: self.exposure_edit())
+        self.ui.saturationSlider.sliderReleased.connect(lambda: self.saturation_edit())
+        self.ui.vibranceSlider.sliderReleased.connect(lambda: self.vibrance_edit())
+        self.ui.warmthSlider.sliderReleased.connect(lambda: self.warmth_edit())
+        self.ui.tintSlider.sliderReleased.connect(lambda: self.tint_edit())
 
 
         self.ui.brightnessLineEdit.textChanged.connect(lambda: self.brightness_edit(True))
