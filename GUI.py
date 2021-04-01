@@ -123,7 +123,7 @@ class LutUI(QObject):
         #右下角的按钮
         self.ui.autoWbButton.clicked.connect(self.auto_wb)
         self.ui.autoCbButton.clicked.connect(self.auto_cb)
-
+        self.ui.resetButton.clicked.connect(self.reset_all)
 
         self.hald1, self.hald2, self.hald3 = None, None, None #保证各模块修改叠加用的变量，123分别对应awb、cs、ce
 
@@ -204,7 +204,7 @@ class LutUI(QObject):
         global img_float
 
         if reset:
-            self.reset_all() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
+            self.reset_para() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
 
 
         img_float = colour.read_image(file_name)
@@ -301,11 +301,13 @@ class LutUI(QObject):
                 ratio = self.zoomscale/(self.zoomscale-event.angleDelta().y()/1000)-1 # 对应缩放比例
                 offset = delta * ratio
                 self.item.setPos(self.item.pos() - offset)
+
+        if obj is self.ui.label_2:
+            print(event.type())
+            if event.type() == QEvent.MouseButtonDblClick: 
+                self.ui.brightnessSlider.setValue(0)
                 
         return super(LutUI, self).eventFilter(obj, event)
-
-        
-
 
     def adjust_zoom_size(self):
         '''
@@ -500,17 +502,17 @@ class LutUI(QObject):
 
 
 
-    def reset_all(self):
+    def reset_para(self):
         '''
         复位各个参数
         '''
-        self.ui.brightnessSlider.setValue(0)
-        self.ui.contrastSlider.setValue(0)
-        self.ui.exposureSlider.setValue(0)
-        self.ui.saturationSlider.setValue(0)
-        self.ui.vibranceSlider.setValue(0)
-        self.ui.warmthSlider.setValue(0)
-        self.ui.tintSlider.setValue(0)
+        self.ui.brightnessLineEdit.setText('0')
+        self.ui.contrastLineEdit.setText('0')
+        self.ui.exposureLineEdit.setText('0')
+        self.ui.saturationLineEdit.setText('0')
+        self.ui.vibranceLineEdit.setText('0')
+        self.ui.warmthLineEdit.setText('0')
+        self.ui.tintLineEdit.setText('0')
 
         self.ui.inGamut.setCurrentIndex(0)
         self.ui.inGamma.setCurrentIndex(0)
@@ -518,6 +520,20 @@ class LutUI(QObject):
         self.ui.outGamut.setCurrentIndex(0)
         self.ui.outGamma.setCurrentIndex(0)
         self.ui.outWp.setCurrentIndex(0)
+
+
+    def reset_all(self):
+        '''
+        复位所有参数，也重置 hald 和 lut
+        '''
+        size = self.lut.cubeSize
+        name = self.lut.name
+
+        self.reset_para()
+        self.hald_img = generate_HALD_np(size)
+        self.lut = compute_lut_np(self.hald_img, size, name)
+        self.hald1, self.hald2, self.hald3 = None, None, None
+
 
 
     def add_lut(self):
@@ -528,7 +544,7 @@ class LutUI(QObject):
             self.lut_path = None
             self.lut.name = '未命名'
             self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
-            self.reset_all()
+            self.reset_para()
             self.show_img()
 
     def read_lut(self):
