@@ -135,7 +135,7 @@ class LutUI(QObject):
 
         self.lut = compute_lut_np(self.hald_img, 33, '未命名')
         self.lut_path = None
-        self.ui.setWindowTitle("未命名"+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+        self.ui.setWindowTitle("未命名"+ " - " + str(self.lut.size) + " - " + "Smart LUT Creator")
 
 
 
@@ -260,7 +260,7 @@ class LutUI(QObject):
         # return 那里会报错，原因不明。QObject 和 super(LutUI, self).__init__() 也是为了处理事件才加上的
 
         if obj is self.ui:
-            if event.type() == QEvent.Resize:
+            if event.type() == QEvent.resize:
                 self.adjust_zoom_size()
 
 
@@ -431,7 +431,7 @@ class LutUI(QObject):
             hald_img = self.hald2
 
         hald_out = rgb_color_enhance(hald_img, brightness=enhence_list[0], contrast=enhence_list[1], exposure=enhence_list[2], saturation=enhence_list[3],vibrance=enhence_list[4],warmth=enhence_list[5],tint=enhence_list[6])
-        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
 
         self.show_img()
 
@@ -464,7 +464,7 @@ class LutUI(QObject):
         img_out = gamut_convert(in_gamut, out_gamut, hald_img, False, True, in_wp, out_wp)
         img_out = np.clip(img_out, 0, 1)
         hald_out = gamma_convert(img_out, in_gamma, out_gamma)
-        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
 
         self.show_img()
 
@@ -526,7 +526,7 @@ class LutUI(QObject):
         '''
         复位所有参数，也重置 hald 和 lut
         '''
-        size = self.lut.cubeSize
+        size = self.lut.size
         name = self.lut.name
 
         self.reset_para()
@@ -537,13 +537,13 @@ class LutUI(QObject):
 
 
     def add_lut(self):
-        value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（2~65）:", self.lut.cubeSize, 2, 65)
+        value, ok = QInputDialog.getInt(self.ui, "新建 LUT", "请输入新建 LUT 大小（2~65）:", self.lut.size, 2, 65)
         if ok:
             self.hald_img = generate_HALD_np(value)
             self.lut = compute_lut_np(self.hald_img, value, '未命名')
             self.lut_path = None
             self.lut.name = '未命名'
-            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.size) + " - " + "Smart LUT Creator")
             self.reset_para()
             self.show_img()
 
@@ -592,10 +592,10 @@ class LutUI(QObject):
         else:
             self.lut = read_lut
 
-        self.hald_img = generate_HALD_np(self.lut.cubeSize)
+        self.hald_img = generate_HALD_np(self.lut.size)
         self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
         self.show_img()
-        self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+        self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.size) + " - " + "Smart LUT Creator")
         self.outlut = self.lut #为了resize时可以保留外部lut对hald的修改，单独存一下该lut
 
 
@@ -625,14 +625,14 @@ class LutUI(QObject):
             if ext_name == 'cube':
                 lut_IO.ToCubeFile(self.lut, save_path)
             elif ext_name == 'vlt':
-                output_lut = self.lut.Resize(17, rename = False)
+                output_lut = self.lut.resize(17, rename = False)
                 lut_IO.ToVltFile(output_lut, save_path)
             elif ext_name == '3dl':
                 lut_type = output_info[2]
                 lut_size = int(output_info[3])
                 lut_depth = int(output_info[4][:2])
 
-                output_lut = self.lut.Resize(lut_size, rename = False)
+                output_lut = self.lut.resize(lut_size, rename = False)
                 if lut_type == 'Lustre':
                     lut_IO.ToLustre3DLFile(output_lut, save_path, lut_depth)
                 elif lut_type == 'Nuke':
@@ -647,13 +647,13 @@ class LutUI(QObject):
         colour.write_image(self.preview, save_path[0])
 
     def resize_lut(self):
-        value, ok = QInputDialog.getInt(self.ui, "修改尺寸", "请输入修改后的 LUT 大小:", self.lut.cubeSize, 2, 65)
+        value, ok = QInputDialog.getInt(self.ui, "修改尺寸", "请输入修改后的 LUT 大小:", self.lut.size, 2, 65)
         if ok:
-            self.lut = self.lut.Resize(value)
+            self.lut = self.lut.resize(value)
             self.hald_img = generate_HALD_np(value)
             if hasattr(self, 'outlut'): #如果导入过外部 lut 的话单独处理
                 self.hald_img = np.float64(apply_lut_np(self.outlut, self.hald_img)/255) 
-            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.cubeSize) + " - " + "Smart LUT Creator")
+            self.ui.setWindowTitle(self.lut.name+ " - " + str(self.lut.size) + " - " + "Smart LUT Creator")
             self.show_img()
 
     def combine_lut(self):
@@ -742,7 +742,7 @@ class LutUI(QObject):
         '''
         用 plt 绘制散点图，耗时较久
         '''
-        step = round(self.lut.cubeSize/10)
+        step = round(self.lut.size/10)
         self.lut.visualize(step)
 
     def auto_wb(self):
@@ -750,7 +750,7 @@ class LutUI(QObject):
         # hald_out = auto_wb_correct(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
         # hald_out = auto_wb_correct_qcgp(img_float, self.hald_img) 
         hald_out = auto_wb_srgb(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
-        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
         self.show_img()
 
         self.hald1 = hald_out
@@ -762,7 +762,7 @@ class LutUI(QObject):
         hald_int = np.uint8(self.hald_img*255)
         hald_out = simplest_cb(img_int, hald_int) 
         hald_out = np.float32(hald_out/255)
-        self.lut = compute_lut_np(hald_out, self.lut.cubeSize, self.lut.name)
+        self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
         self.show_img()
 
         self.hald1 = hald_out

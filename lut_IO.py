@@ -4,16 +4,16 @@ import numpy as np
 import os
 import math
 
-def Indices(cubeSize, maxVal):
+def Indices(size, maxVal):
 	indices = []
-	for i in Indices01(cubeSize):
+	for i in Indices01(size):
 		indices.append(int(i * (maxVal)))
 	return indices
 
-def Indices01(cubeSize): #这里的 01 是域为 0~1 的意思，即将其范围归一化到 0~1
+def Indices01(size): #这里的 01 是域为 0~1 的意思，即将其范围归一化到 0~1
 	indices = []
-	ratio = 1.0/float(cubeSize-1)
-	for i in range(cubeSize):
+	ratio = 1.0/float(size-1)
+	for i in range(size):
 		indices.append(float(i) * ratio)
 	return indices
 
@@ -22,30 +22,30 @@ def _LatticeTo3DLString(lut, bitdepth):
         Used for internal creating of 3DL files.
         """
         string = ""
-        cubeSize = lut.cubeSize
-        for currentCubeIndex in range(0, cubeSize**3):
-            redIndex = currentCubeIndex // (cubeSize*cubeSize)
-            greenIndex = ( (currentCubeIndex % (cubeSize*cubeSize)) // (cubeSize) )
-            blueIndex = currentCubeIndex % cubeSize
+        size = lut.size
+        for currentCubeIndex in range(0, size**3):
+            redIndex = currentCubeIndex // (size*size)
+            greenIndex = ( (currentCubeIndex % (size*size)) // (size) )
+            blueIndex = currentCubeIndex % size
 
-            latticePointColor = lut.lattice[redIndex, greenIndex, blueIndex].Clamped01()
+            latticePointColor = lut.lattice[redIndex, greenIndex, blueIndex].clamped01()
             
-            string += latticePointColor.FormattedAsInteger(2**bitdepth-1) + "\n"
+            string += latticePointColor.formatted_as_integer(2**bitdepth-1) + "\n"
         
         return string
 
 
-def FromIdentity(cubeSize):
+def FromIdentity(size):
     """
     Creates an indentity LUT of specified size.
     """
-    identityLattice = EmptyLatticeOfSize(cubeSize)
-    indices01 = Indices01(cubeSize)
-    for r in range(cubeSize):
-        for g in range(cubeSize):
-            for b in range(cubeSize):
+    identityLattice = empty_lattice_of_size(size)
+    indices01 = Indices01(size)
+    for r in range(size):
+        for g in range(size):
+            for b in range(size):
                 identityLattice[r, g, b] = Color(indices01[r], indices01[g], indices01[b])
-    return LUT(identityLattice, name = "Identity"+str(cubeSize))	   
+    return LUT(identityLattice, name = "Identity"+str(size))	   
 
 def FromLustre3DLFile(lut_path):
     with open(lut_path, 'rt') as f:
@@ -84,7 +84,7 @@ def FromLustre3DLFile(lut_path):
             green_index = ( (current_index % (size*size)) // (size) )
             blue_index = current_index % size
 
-            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = output_depth) 
+            lattice[red_index, green_index, blue_index] = Color.from_RGB_integer(red_value, green_value, blue_value, bitdepth = output_depth) 
             current_index += 1
 
     return LUT(lattice, name = name)
@@ -128,7 +128,7 @@ def FromNuke3DLFile(lut_path):
             green_index = ( (current_index % (size*size)) // (size) )
             blue_index = current_index % size
 
-            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = output_depth) #将整数换算到浮点
+            lattice[red_index, green_index, blue_index] = Color.from_RGB_integer(red_value, green_value, blue_value, bitdepth = output_depth) #将整数换算到浮点
             current_index += 1
     return LUT(lattice, name = name)
 
@@ -247,15 +247,15 @@ def FromVltFile(lut_path):
             green_index = ( (current_index % (size*size)) // (size) ) 
             blue_index = current_index // (size*size)
 
-            lattice[red_index, green_index, blue_index] = Color.FromRGBInteger(red_value, green_value, blue_value, bitdepth = 12)
+            lattice[red_index, green_index, blue_index] = Color.from_RGB_integer(red_value, green_value, blue_value, bitdepth = 12)
             current_index += 1
 
     return LUT(lattice, name = name)
 
 
 def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
-    cubeSize = lut.cubeSize
-    inputDepth = math.log(cubeSize-1, 2)
+    size = lut.size
+    inputDepth = math.log(size-1, 2)
 
     if int(inputDepth) != inputDepth:
         raise NameError("Invalid cube size for 3DL. Cube size must be 2^x + 1")
@@ -264,7 +264,7 @@ def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
 
     lutFile.write("3DMESH\n")
     lutFile.write("Mesh " + str(int(inputDepth)) + " " + str(bitdepth) + "\n")
-    lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**10 - 1)]) + "\n")#和深度无关，这一行都是 0~1023
+    lutFile.write(' '.join([str(int(x)) for x in Indices(size, 2**10 - 1)]) + "\n")#和深度无关，这一行都是 0~1023
     
     lutFile.write(_LatticeTo3DLString(lut, bitdepth))
 
@@ -274,11 +274,11 @@ def ToLustre3DLFile(lut, fileOutPath, bitdepth = 12):
 
 
 def ToNuke3DLFile(lut, fileOutPath, bitdepth = 16):
-    cubeSize = lut.cubeSize
+    size = lut.size
 
     lutFile = open(fileOutPath, 'w')
 
-    lutFile.write(' '.join([str(int(x)) for x in Indices(cubeSize, 2**bitdepth - 1)]) + "\n")
+    lutFile.write(' '.join([str(int(x)) for x in Indices(size, 2**bitdepth - 1)]) + "\n")
 
     lutFile.write(_LatticeTo3DLString(lut, bitdepth))
 
@@ -286,26 +286,26 @@ def ToNuke3DLFile(lut, fileOutPath, bitdepth = 16):
 
 
 def ToCubeFile(lut, cubeFileOutPath):
-    cubeSize = lut.cubeSize
+    size = lut.size
     cubeFile = open(cubeFileOutPath, 'w')
-    cubeFile.write("LUT_3D_SIZE " + str(cubeSize) + "\n")
+    cubeFile.write("LUT_3D_SIZE " + str(size) + "\n")
     
-    for current_index in range(0, cubeSize**3):
-        red_index = current_index % cubeSize
-        green_index = ( (current_index % (cubeSize*cubeSize)) // (cubeSize) )
-        blue_index = current_index // (cubeSize*cubeSize)
+    for current_index in range(0, size**3):
+        red_index = current_index % size
+        green_index = ( (current_index % (size*size)) // (size) )
+        blue_index = current_index // (size*size)
 
-        latticePointColor = lut.lattice[red_index, green_index, blue_index].Clamped01()
+        latticePointColor = lut.lattice[red_index, green_index, blue_index].clamped01()
         
-        cubeFile.write( latticePointColor.FormattedAsFloat() )
+        cubeFile.write( latticePointColor.formatted_as_float() )
         
-        if(current_index != cubeSize**3 - 1):
+        if(current_index != size**3 - 1):
             cubeFile.write("\n")
 
     cubeFile.close()
 
 def ToVltFile(lut, file_path):
-    size = lut.cubeSize
+    size = lut.size
     vlt_file = open(file_path, 'w')
     vlt_file.write("# panasonic vlt file version 1.0" + "\n")
     vlt_file.write("# source vlt file \"\"" + "\n")
@@ -317,9 +317,9 @@ def ToVltFile(lut, file_path):
         green_index = ( (current_index % (size*size)) // (size) )
         blue_index = current_index // (size*size)
 
-        latticePointColor = lut.lattice[red_index, green_index, blue_index].Clamped01()
+        latticePointColor = lut.lattice[red_index, green_index, blue_index].clamped01()
         
-        vlt_file.write(latticePointColor.FormattedAsInteger(4095))
+        vlt_file.write(latticePointColor.formatted_as_integer(4095))
         
         if(current_index != size**3 - 1):
             vlt_file.write("\n")

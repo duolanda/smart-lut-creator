@@ -23,7 +23,7 @@ def compute_lut_np(hald_img_pixel, lut_size, name=None):
         b = pixel[2]
         color = (r,g,b)
         colors.append(color)
-    out_lut = LUT.FromCompute(lut_size, colors, name)
+    out_lut = LUT.from_compute(lut_size, colors, name)
     return out_lut
 
   

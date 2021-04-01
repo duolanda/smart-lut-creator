@@ -72,7 +72,7 @@ def test_compute():
             b = pixel[2]/255
             color = (r,g,b)
             colors.append(color)
-        out_lut = LUT.FromCompute(lut_size, colors)
+        out_lut = LUT.from_compute(lut_size, colors)
         ToCubeFile(out_lut, out_path)
         return (lut)
 
@@ -168,7 +168,7 @@ def test_editor():
     测试 LUT 编辑模块
     '''
     # in_lut = FromCubeFile('test_lut/Lattice_33.cube')
-    # out_lut = in_lut.Resize(24) #经测试，不管是放大还是缩小，结果都与 lattice 完全一致
+    # out_lut = in_lut.resize(24) #经测试，不管是放大还是缩小，结果都与 lattice 完全一致
     # ToCubeFile(out_lut, 'test_lut/smart_33 to 24.cube')
 
 
@@ -179,7 +179,7 @@ def test_editor():
 
 
     in_lut = FromCubeFile('test_lut/lattice_33.cube')
-    out_lut = in_lut.Reverse() 
+    out_lut = in_lut.reverse() 
     ToCubeFile(out_lut, 'test_lut/lut3_33_reverse.cube')
 
 def test_auto_cb():

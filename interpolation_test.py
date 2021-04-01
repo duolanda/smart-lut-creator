@@ -30,7 +30,7 @@ def trilinear_interpolation(lut, r, g, b):
 
     r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
 
-    size = lut.cubeSize
+    size = lut.size
 
     r0 = np.clip(np.floor(r).astype(np.uint8), 0, size-1)
     r1 = np.clip(r0+1, 0, size-1)
@@ -86,7 +86,7 @@ def tetrahedral_interpolation(lut, r, g, b):
     '''
     r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
 
-    size = lut.cubeSize
+    size = lut.size
 
     l = lut.lattice_np
     r0 = clamp(int(math.floor(r)), 0, size-1)
@@ -143,7 +143,7 @@ def tetrahedral_interpolation_np(lut, r, g, b):
     '''
     r,b = b,r #因为 lattie_np 其实是按bgr来的，不交换的话会错
 
-    size = lut.cubeSize
+    size = lut.size
 
     l = lut.lattice_np
 
@@ -194,7 +194,7 @@ def apply_lut(lut, img, method):
     - tri：三线性插值
     - tet：四面体插值
     '''
-    size = lut.cubeSize
+    size = lut.size
 
     r,g,b = img[:,:,0], img[:,:,1], img[:,:,2]
     r = r * (size-1) 

@@ -15,7 +15,7 @@ def load_lut(lut, target_mode=None, cls=ImageFilter.Color3DLUT):
                 Default is ``ImageFilter.Color3DLUT``.
     """
 
-    size = lut.cubeSize
+    size = lut.size
     name = lut.name
     channels = 3
 

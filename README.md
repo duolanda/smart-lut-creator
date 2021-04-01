@@ -32,9 +32,7 @@
 - my_widget.py - 实现可接受拖拽动作的 myQGraphicsView
 - my_signal.py - 帮助 my_widget 传递信号
 
-### 其他
 
-- kdtree.py - 配合 lut.py 中的 Reverse 方法，未来可能会删除
 
 
 
