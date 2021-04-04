@@ -15,6 +15,7 @@ from shutil import copy
 import pymiere
 from pymiere import wrappers
 import DaVinciResolveScript as bmd
+import matplotlib.pyplot as plt
 import qtmodern.styles
 import qtmodern.windows
 from lut import LUT
@@ -56,6 +57,7 @@ class LutUI(QObject):
         self.ui.exportHALD.triggered.connect(self.export_HALD)
         self.ui.loadHALD.triggered.connect(self.load_HALD)
         self.ui.visualizeLUT.triggered.connect(self.vis_lut)
+        self.ui.drawHistogram.triggered.connect(self.draw_histogram)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -744,6 +746,20 @@ class LutUI(QObject):
         '''
         step = round(self.lut.size/10)
         self.lut.visualize(step)
+
+    def draw_histogram(self):
+        '''
+        绘制当前预览画面的直方图
+        '''
+        r,g,b = self.preview[:,:,0], self.preview[:,:,1], self.preview[:,:,2]
+        plt.figure("直方图")
+        ar=np.array(r).flatten()
+        plt.hist(ar, bins=256, normed=1, color='r', hold=1,)
+        ag=np.array(g).flatten()
+        plt.hist(ag, bins=256, normed=1, color='g', alpha=0.5, hold=1)
+        ab=np.array(b).flatten()
+        plt.hist(ab, bins=256, normed=1, color='b', alpha=0.5)
+        plt.show()
 
     def auto_wb(self):
         global img_float

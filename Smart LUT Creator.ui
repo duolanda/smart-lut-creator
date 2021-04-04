@@ -382,6 +382,7 @@
     <addaction name="exportHALD"/>
     <addaction name="loadHALD"/>
     <addaction name="visualizeLUT"/>
+    <addaction name="drawHistogram"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
@@ -414,6 +415,11 @@
   <action name="visualizeLUT">
    <property name="text">
     <string>LUT 可视化</string>
+   </property>
+  </action>
+  <action name="drawHistogram">
+   <property name="text">
+    <string>绘制直方图</string>
    </property>
   </action>
  </widget>
