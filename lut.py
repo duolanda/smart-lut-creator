@@ -3,8 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D
 
-import kdtree
-
 class LutM: #来自于 lut_maker 的 lut 类，未来可能与来自 pylut 的 lut 类合并
     def __init__(self, size):
         self.size = size

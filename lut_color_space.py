@@ -10,6 +10,12 @@ def vector_dot(m, v):
     '''
     return np.einsum('...ij,...j->...i', m, v)
 
+def logx(a, b):
+    '''
+    换底公式，a 是底，b 是真数
+    '''
+    return np.log(b)/np.log(a)
+
 def xyz_color (x, y, z = None):
     '''Construct an xyz color.  If z is omitted, set it so that x+y+z = 1.0.'''
     if z == None:
@@ -107,6 +113,48 @@ def flog(img, to_linear):
         choicelist = [c*np.log10(a*img+b)+d,
                     e*img+f]
         img = np.select([img >= 0.00089, True], choicelist)
+    return img
+
+def redlog3g10(img, to_linear):
+    a = 0.224282
+    b = 155.975327
+    c = 0.01
+    g = 15.1927
+    if to_linear:
+        choicelist = [(10**(img/a)-1)/b, 
+                    (img/g)-c]
+        img = np.select([img >= 0, True], choicelist)
+        img = img-c
+    else:
+        img = img+c
+        choicelist = [a*np.log10((img*b)+1),
+                    img*g]
+        img = np.select([img >= 0, True], choicelist)
+    return img
+
+def other_log(img, to_linear, name):
+    if name == "BMD Pocket Film":
+        m = [ 0.195367159 / 0.9, -0.014273567 / 0.9, 0.36274758, 1.05345192 * 0.9, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 * 0.9 ]
+    elif name == "BMD Film":
+        m = [ 0.261115778 * 0.9, -0.024248528 * 0.9, 0.367608577, 0.86786483 / 0.9, 10, 0.644065346, 0.03135747, 0.114002127, 0.005519226 / 0.9 ]
+    elif name == "BMD Film 4K":
+        m = [ 0.37237694 * 0.9, -0.034580801 * 0.9, 0.582240088, 2.617961052 / 0.9, 10, 0.461883884, 0.231964429, 0.10772883, 0.005534931 / 0.9 ]
+    elif name == "BMD Film 4.6K":
+        m = [ 0.195367159 / 0.9, -0.014273567 / 0.9, 0.36274758, 1.05345192 * 0.9, 10, 0.63659829, 0.027616437, 0.096214896, 0.004523664 * 0.9 ]
+    # elif name == "GoPro Pro Tune":
+    #     m = [ 0, 0, 876/1023, 53.39427221, 113, 64/1023, 1, 0, 0 ]
+    else:
+        raise("Not supported gamma")
+
+
+    if to_linear:
+        choicelist = [(10**((img - m[5])/m[2])-m[6])/m[3], 
+                    m[0]*img+m[1]]
+        img = np.select([img >= m[7], True], choicelist)
+    else:
+        choicelist = [(m[2]*logx(m[4], img*m[3]+m[6]))+m[5], 
+                    (img-m[1])/m[0]]
+        img = np.select([img >= m[8], True], choicelist)
     return img
 
 
@@ -251,6 +299,19 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
         img = vlog(img, to_linear = True)
     elif input_gamma == 'Fujifilm F-Log':
         img = flog(img, to_linear = True)
+    elif input_gamma == 'BMD Pocket Film':
+        img = other_log(img, to_linear = True, name='BMD Pocket Film')
+    elif input_gamma == 'BMD Film':
+        img = other_log(img, to_linear = True, name='BMD Film')
+    elif input_gamma == 'BMD Film 4K':
+        img = other_log(img, to_linear = True, name='BMD Film')
+    elif input_gamma == 'BMD Film 4.6K':
+        img = other_log(img, to_linear = True, name='BMD Film')
+    # elif input_gamma == 'GoPro Protune':
+    #     img = other_log(img, to_linear = True, name='GoPro Pro Tune')
+    elif input_gamma == 'Red Log3G10':
+        img = redlog3g10(img, to_linear = True)
+        
     else:
         img = img ** input_gamma
 
@@ -270,6 +331,18 @@ def gamma_convert(img, input_gamma = 2.2, output_gamma = 2.2, clip=True):
         img = flog(img, to_linear = False)
     elif output_gamma == 'Linear':
         img = img ** 1 
+    elif output_gamma == 'BMD Pocket Film':
+        img = other_log(img, to_linear = False, name='BMD Pocket Film')
+    elif output_gamma == 'BMD Film':
+        img = other_log(img, to_linear = False, name='BMD Film')
+    elif output_gamma == 'BMD Film 4K':
+        img = other_log(img, to_linear = False, name='BMD Film')
+    elif output_gamma == 'BMD Film 4.6K':
+        img = other_log(img, to_linear = False, name='BMD Film')
+    # elif output_gamma == 'GoPro Protune':
+    #     img = other_log(img, to_linear = False, name='GoPro Pro Tune')
+    elif output_gamma == 'Red Log3G10':
+        img = redlog3g10(img, to_linear = False)
     else:
         img = img ** (1/output_gamma)
 

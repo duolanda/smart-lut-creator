@@ -63,7 +63,7 @@ class LutUI(QObject):
 
         #色彩空间转换
         gamut_list = ['sRGB', 'Sony S-Gamut/S-Gamut3', 'Arri Wide Gamut','Canon Cinema Gamut','Panasonic V-Gamut','BMDFilm 4K(Legacy)','Fuji F-Log Gamut','RedWideGamutRGB','DJI D-Gamut','GoPro ProTune Native']
-        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800', 'Canon C-Log', 'Panasonic V-Log', 'Fujifilm F-Log']
+        gamma_list = ['Linear', 'sRGB', 'Rec.709', 'Sony S-Log3', 'Arri LogC EI 800', 'Canon C-Log', 'Panasonic V-Log', 'BMD Pocket Film', 'BMD Film', 'BMD Film 4K', 'BMD Film 4.6K', 'Fujifilm F-Log','Red Log3G10']
         wp_list = ['D65', 'A', 'C', 'D50', 'D55', 'D60', 'D75', 'BMDFilm 4K(Legacy)']
         self.ui.inGamut.addItems(gamut_list)
         self.ui.inGamma.addItems(gamma_list)
@@ -260,7 +260,7 @@ class LutUI(QObject):
         # return 那里会报错，原因不明。QObject 和 super(LutUI, self).__init__() 也是为了处理事件才加上的
 
         if obj is self.ui:
-            if event.type() == QEvent.resize:
+            if event.type() == QEvent.Resize:
                 self.adjust_zoom_size()
 
 
