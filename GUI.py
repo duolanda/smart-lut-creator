@@ -535,6 +535,8 @@ class LutUI(QObject):
         self.hald_img = generate_HALD_np(size)
         self.lut = compute_lut_np(self.hald_img, size, name)
         self.hald1, self.hald2, self.hald3 = None, None, None
+        self.show_img()
+
 
 
 
@@ -660,7 +662,7 @@ class LutUI(QObject):
 
     def combine_lut(self):
         lut2 = self.read_lut()
-        self.lut = self.lut.CombineWithLUT(lut2)
+        self.lut = self.lut.combine_with_lut(lut2)
         self.hald_img = np.float64(apply_lut_np(self.lut, self.hald_img)/255) 
         self.show_img()
 
@@ -745,7 +747,7 @@ class LutUI(QObject):
         用 plt 绘制散点图，耗时较久
         '''
         step = round(self.lut.size/10)
-        self.lut.visualize(step)
+        self.lut.visualize(1)
 
     def draw_histogram(self):
         '''

@@ -1,3 +1,4 @@
+from sys import int_info
 import colour
 import numpy as np
 
@@ -174,7 +175,7 @@ def test_editor():
 
     # lut1 = FromCubeFile('test_lut/lut1_exposure_1.5.cube')
     # lut2 = FromCubeFile('test_lut/lut2_saturation_1.5.cube')
-    # out_lut = lut1.CombineWithLUT(lut2)
+    # out_lut = lut1.combine_with_lut(lut2)
     # ToCubeFile(out_lut, 'test_lut/lut3_combine.cube')
 
 
@@ -210,5 +211,8 @@ def test_io():
     ToVltFile(lut, 'test_lut/my_pansonicVLT3D_v1.0_17.vlt')
 
 
+
+
 if __name__ == '__main__':
     test_io()
+    

@@ -150,9 +150,9 @@ if __name__ == '__main__':
 
     img = colour.read_image('G:/Documents/大学/毕设相关/smart-lut-creator/test_img/lena_std.tif')
     hist = histogram(img)
-    out = np.asarray(hist.bits())
-    out = out.reshape(200,200,4)
-    colour.write_image(out, 'out.png')
+    # out = np.asarray(hist.bits())
+    # out = out.reshape(200,200,4)
+    # colour.write_image(out, 'out.png')
     window.change_hist(hist)
 
 
