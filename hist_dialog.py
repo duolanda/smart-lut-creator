@@ -1,69 +1,106 @@
 import colour
-import matplotlib.pyplot as plt
 import numpy as np
 
 import PySide6
 from PySide6 import QtCore
 from PySide6.QtCore import Qt, QSize, QPointF
-from PySide6.QtWidgets import QApplication, QSizePolicy, QVBoxLayout, QLabel, QHBoxLayout, QWidget, QListWidget, QListWidgetItem
+from PySide6.QtWidgets import QApplication, QSizePolicy, QVBoxLayout, QLabel, QCheckBox, QHBoxLayout, QWidget, QListWidget, QListWidgetItem
 from PySide6.QtGui import QImage, QPixmap, QIcon, QPainter, QColor, QPolygonF, QPainterPath, QBrush
 
 
-class histForm(QWidget):
+class Hist_Dialog(QWidget):
     """
     Form for histogram viewing
     """
     def __init__(self, size=200):
         super().__init__()
         self.mode = 'Luminosity'
-        self.chanColors = [Qt.gray]
+        self.chan_colors = [Qt.gray]
         self.setWindowTitle('Histogram')
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.setMinimumSize(size, 100)
-        self.Label_Hist = QLabel()
-        self.Label_Hist.setScaledContents(True)
-        self.Label_Hist.setFocusPolicy(Qt.ClickFocus)
+
+        self.init_widgets()
+
+        self.sourceCheckBox.stateChanged.connect(self.change_option)
+        self.rCheckBox.stateChanged.connect(self.change_option)
+        self.gCheckBox.stateChanged.connect(self.change_option)
+        self.bCheckBox.stateChanged.connect(self.change_option)
+
+    def init_widgets(self):
+        self.label_hist = QLabel()
+        self.label_hist.setScaledContents(True)
+        self.label_hist.setFocusPolicy(Qt.ClickFocus)
         self.setStyleSheet("QListWidget{border: 0px; font-size: 12px}")
 
-        # options
-        # options1, optionNames1 = ['Original Image'], ['Source']
-        # self.listWidget1 = optionsWidget(options=options1, optionNames=optionNames1, exclusive=False)
-        # self.listWidget1.setFixedSize((self.listWidget1.sizeHintForColumn(0) + 15) * len(options1), 20)
-        # options2, optionNames2 = ['R', 'G', 'B', 'L'], ['R', 'G', 'B', 'L']
-        # self.listWidget2 = optionsWidget(options=options2, optionNames=optionNames2, exclusive=False, flow=optionsWidget.LeftToRight)
-        # self.listWidget2.setFixedSize((self.listWidget2.sizeHintForRow(0) + 20) * len(options2), 20)  # + 20 needed to prevent scroll bar on ubuntu
-        # # default: show color hists only
-        # for i in range(3):
-        #     self.listWidget2.checkOption(self.listWidget2.intNames[i])
-        # self.options = UDict((self.listWidget1.options, self.listWidget2.options))
+        self.sourceCheckBox = QCheckBox("source")
+        self.rCheckBox = QCheckBox("red")
+        self.gCheckBox = QCheckBox("green")
+        self.bCheckBox = QCheckBox("blue")
 
+        self.rCheckBox.setChecked(True)
+        self.gCheckBox.setChecked(True)
+        self.bCheckBox.setChecked(True)
 
 
         # layout
-        # h = QHBoxLayout()
-        # h.setContentsMargins(0, 0, 0, 2)
-        # h.addStretch(1)
-        # h.addWidget(self.listWidget1)
-        # h.addStretch(1)
-        # h.addWidget(self.listWidget2)
-        # h.addStretch(1)
+        h = QHBoxLayout()
+        h.addWidget(self.sourceCheckBox)
+        h.addWidget(self.rCheckBox)
+        h.addWidget(self.gCheckBox)
+        h.addWidget(self.bCheckBox)
+        h.setStretch(0, 3)
+        h.setStretch(1, 1)
+        h.setStretch(2, 1)
+        h.setStretch(3, 1)
+
         vl = QVBoxLayout()
-        vl.addWidget(self.Label_Hist)
-        # vl.addLayout(h)
+        vl.addWidget(self.label_hist)
+        vl.addLayout(h)
         vl.setContentsMargins(0, 0, 0, 2)  # left, top, right, bottom
         self.setLayout(vl)
         self.adjustSize()
 
+
+    def change_option(self):
+        source = self.sourceCheckBox.isChecked()
+        r = self.rCheckBox.isChecked()
+        g = self.gCheckBox.isChecked()
+        b = self.bCheckBox.isChecked()
+
+        chans = []
+        chan_colors = []
+        i = 0
+        if r == True:
+            chans.append(0)
+            chan_colors.append(QColor(255, 0, 0))
+        if g == True:
+            chans.append(1)
+            chan_colors.append(QColor(0, 255, 0))
+        if b == True:
+            chans.append(2)
+            chan_colors.append(QColor(10, 10, 255))
+
+        if source:
+            hist = histogram(self.s_img, chans=chans)
+        else:
+            hist = histogram(self.c_img, chans=chans)
+        self.change_hist(hist)
+
+
     def change_hist(self, target_hist):
         # img = QImage(target_hist, target_hist.shape[1], target_hist.shape[0], target_hist.shape[1]*3, QImage.Format_RGB888)
         pix = QPixmap.fromImage(target_hist)
-        hist = pix.scaled(self.Label_Hist.width(), self.Label_Hist.height())
-        self.Label_Hist.setPixmap(hist)
+        hist = pix.scaled(self.label_hist.width(), self.label_hist.height())
+        self.label_hist.setPixmap(hist)
+
+    def set_img(self, source_img, current_img):
+        self.s_img = source_img
+        self.c_img = current_img
 
 
-
-def histogram(in_img, size=QSize(200, 200), bgColor=Qt.white, range=(0, 255),
-                  chans=[0, 1, 2], chanColors=[QColor(255, 0, 0), QColor(0, 255, 0), QColor(10, 10, 255)], clipping_threshold=0.02):
+def histogram(in_img, size=QSize(200, 200), bg_color=QColor(53, 53, 53), range=(0, 255),
+                  chans=[0, 1, 2], chan_colors=[QColor(255, 0, 0), QColor(0, 255, 0), QColor(10, 10, 255)], clipping_threshold=0.02):
        
     binCount = 85  # 255 = 85 * 3
     # convert size to QSize
@@ -125,10 +162,10 @@ def histogram(in_img, size=QSize(200, 200), bgColor=Qt.white, range=(0, 255),
     
     # drawing the histogram onto img
     img = QImage(size.width(), size.height(), QImage.Format_ARGB32)
-    img.fill(bgColor)
+    img.fill(bg_color)
     qp = QPainter(img)
-    if type(chanColors) is QColor or type(chanColors) is Qt.GlobalColor:
-        chanColors = [chanColors]*3
+    if type(chan_colors) is QColor or type(chan_colors) is Qt.GlobalColor:
+        chan_colors = [chan_colors]*3
     # compute histograms
     # bins='auto' sometimes causes a huge number of bins ( >= 10**9) and memory error
     # even for small data size (<=250000), so we don't use it.
@@ -137,27 +174,12 @@ def histogram(in_img, size=QSize(200, 200), bgColor=Qt.white, range=(0, 255),
     for i, ch in enumerate(chans):
         buf0 = buf[:, :, ch]
         hist_L[i], bin_edges_L[i] = np.histogram(buf0, range=range, bins=binCount, density=True)
-        drawChannelHistogram(qp, hist_L[i], bin_edges_L[i], chanColors[ch])
+        drawChannelHistogram(qp, hist_L[i], bin_edges_L[i], chan_colors[ch])
         
     qp.end()
     return img
 
 
-if __name__ == '__main__':
-    app = QApplication()
-    window = histForm()
-
-
-    img = colour.read_image('G:/Documents/大学/毕设相关/smart-lut-creator/test_img/lena_std.tif')
-    hist = histogram(img)
-    # out = np.asarray(hist.bits())
-    # out = out.reshape(200,200,4)
-    # colour.write_image(out, 'out.png')
-    window.change_hist(hist)
-
-
-    window.show()
-    app.exec_()
 
 
 

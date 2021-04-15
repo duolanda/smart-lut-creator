@@ -6,6 +6,7 @@ from PySide6.QtGui import QImage, QPixmap, QIcon
 from my_widget import myQGraphicsView
 from my_signal import mysgn
 from output_dialog import Output_Dialog
+from hist_dialog import Hist_Dialog, histogram
 
 import os
 import colour
@@ -232,7 +233,7 @@ class LutUI(QObject):
             self.show_img()
             self.comapre_bool = False
         else:
-            self.show_raw_img()
+            self.show_source_img()
             self.comapre_bool = True
 
 
@@ -474,7 +475,7 @@ class LutUI(QObject):
         if type(self.hald3) != type(None): #hald3不为空说明改过ce了，那么只要改cs就要让ce在改后的cs基础上接着改
             self.color_enhence()
 
-    def show_raw_img(self):
+    def show_source_img(self):
         '''
         将处理前的图片显示到 UI 上
         '''
@@ -753,15 +754,23 @@ class LutUI(QObject):
         '''
         绘制当前预览画面的直方图
         '''
-        r,g,b = self.preview[:,:,0], self.preview[:,:,1], self.preview[:,:,2]
-        plt.figure("直方图")
-        ar=np.array(r).flatten()
-        plt.hist(ar, bins=256, normed=1, color='r', hold=1,)
-        ag=np.array(g).flatten()
-        plt.hist(ag, bins=256, normed=1, color='g', alpha=0.5, hold=1)
-        ab=np.array(b).flatten()
-        plt.hist(ab, bins=256, normed=1, color='b', alpha=0.5)
-        plt.show()
+        global img_float
+        # r,g,b = self.preview[:,:,0], self.preview[:,:,1], self.preview[:,:,2]
+        # plt.figure("直方图")
+        # ar=np.array(r).flatten()
+        # plt.hist(ar, bins=256, normed=1, color='r', hold=1,)
+        # ag=np.array(g).flatten()
+        # plt.hist(ag, bins=256, normed=1, color='g', alpha=0.5, hold=1)
+        # ab=np.array(b).flatten()
+        # plt.hist(ab, bins=256, normed=1, color='b', alpha=0.5)
+        # plt.show()
+
+        self.hist_dialog = Hist_Dialog()
+        self.hist_dialog.set_img(img_float, self.preview)
+        hist = histogram(self.preview)
+        self.hist_dialog.change_hist(hist)
+        self.hist_dialog.show()
+
 
     def auto_wb(self):
         global img_float
