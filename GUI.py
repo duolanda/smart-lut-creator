@@ -206,7 +206,7 @@ class LutUI(QObject):
         global img_float
 
         if reset:
-            self.reset_para() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
+            self.reset_para() #打开一张新图之前先将各个参数都归位。
 
 
         img_float = read_image(file_name)

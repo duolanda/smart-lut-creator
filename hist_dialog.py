@@ -102,72 +102,66 @@ def histogram(in_img, size=QSize(200, 200), bg_color=QColor(53, 53, 53), range=(
                   chans=[0, 1, 2], chan_colors=[QColor(255, 0, 0), QColor(0, 255, 0), QColor(10, 10, 255)], clipping_threshold=0.02):
        
     binCount = 85  # 255 = 85 * 3
-    # convert size to QSize
-    if type(size) is int:
-        size = QSize(size, size)
-    # scaling factor for bin drawing
+
+    # 缩放因子
     spread = float(range[1] - range[0])
     scale = size.width() / spread
-    # the last bin is drawn as a vertical line (width = 0),
-    # so we correct the scale factor accordingly
+    # 最后一个 bin 画起来是一根垂直线（宽度为0），需要修正缩放
+    # 不修正的话窗口会填不满
     scale *= binCount / (binCount - 1)
 
-    # per channel histogram function
     def drawChannelHistogram(painter, hist, bin_edges, color):
-        # Draw histogram for a single channel.
-        # param painter: QPainter
-        # param hist: histogram to draw
-        # smooth the histogram (first and last bins excepted) for a better visualization of clipping.
-        # hist = np.concatenate(([hist[0]], SavitzkyGolayFilter.filter(hist[1:-1]), [hist[-1]]))
-        # To emphasize significant values we clip the first bin to max height of the others
-        M = max(hist[1: ])  # max(hist)  # max(hist[1:-1])
+        '''
+        单独绘制每个通道的直方图
+        - painter：QPainter
+        - hist：要绘制的直方图
+        - bin_edges：每个 bin 的边缘
+        - color：绘图颜色
+        '''
+
+        # 原来用的是 M = max(hist[1: ])，原因是为了强调重要数值，将第一个值去掉
+        M = max(hist)  # 最大值作为其他 bin 的最高高度基准
         imgH = size.height()
-        # drawing  trapezia instead of rectangles to quickly "smooth" the histogram
-        # the rightmost trapezium is not drawn
+        # 绘制梯形而不是矩形，以快速“平滑”直方图，最右边的梯形未绘制
         poly = QPolygonF()
-        poly.append(QPointF(range[0], imgH))  # bottom left point
+        poly.append(QPointF(range[0], imgH))  # 左下角的点（QT的坐标原点是左上角）
         for i, y in enumerate(hist):
             try:
                 h = imgH * y / M
                 if np.isnan(h):
                     raise ValueError
             except (ValueError, ArithmeticError, FloatingPointError, ZeroDivisionError):
-                # don't draw the histogram for this channel if M is too small
                 return
-            poly.append(QPointF((bin_edges[i] - range[0]) * scale, max(imgH - h, 0)))
-            # clipping indicators
+            poly.append(QPointF((bin_edges[i] - range[0]) * scale, max(imgH - h, 0))) #y正方向是向下，所以要 imgH-h
+            # indicator 裁切
             if i == 0 or i == len(hist)-1:
                 left = bin_edges[0 if i == 0 else -1] * scale
-                left = left - (20 if i > 0 else 0)  # shift the indicator at right
+                left = left - (20 if i > 0 else 0)  # 偏移右侧坐标
                 percent = hist[i] * (bin_edges[i+1]-bin_edges[i])
                 if percent > clipping_threshold:
-                    # set the color of the indicator according to percent value
-                    nonlocal gPercent
-                    gPercent = min(gPercent, np.clip((0.05 - percent) / 0.03, 0, 1))
+                    # 根据 percent 值设定 indicator 的颜色
+                    gPercent = min(1, np.clip((0.05 - percent) / 0.03, 0, 1))
                     painter.fillRect(left, 0, 10, 10, QColor(255, 255*gPercent, 0))
-        # draw the filled polygon
-        poly.append(QPointF(poly.constLast().x(), imgH))  # bottom right point
+        # 填充颜色
+        poly.append(QPointF(poly.constLast().x(), imgH))  # 右下角的点
         path = QPainterPath()
         path.addPolygon(poly)
-        path.closeSubpath()
-        painter.setPen(Qt.NoPen)
+        path.closeSubpath() #自动连到原点
+        painter.setPen(Qt.NoPen) #只填充不描边
         painter.fillPath(path, QBrush(color))
-    # end of drawChannelHistogram
+    # drawChannelHistogram 函数结束
 
-    # green percent for clipping indicators
-    gPercent = 1.0
     buf = None
     buf = (in_img*255).astype(np.uint8)
     
-    # drawing the histogram onto img
     img = QImage(size.width(), size.height(), QImage.Format_ARGB32)
     img.fill(bg_color)
     qp = QPainter(img)
     if type(chan_colors) is QColor or type(chan_colors) is Qt.GlobalColor:
         chan_colors = [chan_colors]*3
-    # compute histograms
-    # bins='auto' sometimes causes a huge number of bins ( >= 10**9) and memory error
-    # even for small data size (<=250000), so we don't use it.
+
+    # 计算直方图
+    # 如果 bins='auto'，有时会造成 bin 数过多( >= 10**9)或内存错误，所以不用
 
     hist_L, bin_edges_L = [0]*len(chans), [0]*len(chans)
     for i, ch in enumerate(chans):
