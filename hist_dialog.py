@@ -37,6 +37,7 @@ class Hist_Dialog(QWidget):
         self.gCheckBox = QCheckBox("green")
         self.bCheckBox = QCheckBox("blue")
 
+        self.sourceCheckBox.setChecked(False)
         self.rCheckBox.setChecked(True)
         self.gCheckBox.setChecked(True)
         self.bCheckBox.setChecked(True)
@@ -88,7 +89,6 @@ class Hist_Dialog(QWidget):
 
 
     def change_hist(self, target_hist):
-        # img = QImage(target_hist, target_hist.shape[1], target_hist.shape[0], target_hist.shape[1]*3, QImage.Format_RGB888)
         pix = QPixmap.fromImage(target_hist)
         hist = pix.scaled(self.label_hist.width(), self.label_hist.height())
         self.label_hist.setPixmap(hist)

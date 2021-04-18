@@ -142,7 +142,6 @@ class LutUI(QObject):
 
 
 
-
     def init_color_enhence(self):
         # 滑块只支持 int，所以要做个映射，滑块-100~100 对应文本框 -1~1
         global enhence_list
@@ -235,7 +234,6 @@ class LutUI(QObject):
         else:
             self.show_source_img()
             self.comapre_bool = True
-
 
     def zoomin(self):
         """
@@ -766,7 +764,7 @@ class LutUI(QObject):
         # plt.show()
 
         self.hist_dialog = Hist_Dialog()
-        self.hist_dialog.set_img(img_float, self.preview)
+        self.hist_dialog.set_img(np.uint8(img_float*255), self.preview) # 图片都是 0~255
         hist = histogram(self.preview)
         self.hist_dialog.change_hist(hist)
         self.hist_dialog.show()
