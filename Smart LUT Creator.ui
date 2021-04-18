@@ -381,11 +381,18 @@
     <addaction name="setDavinciLut"/>
     <addaction name="exportHALD"/>
     <addaction name="loadHALD"/>
+   </widget>
+   <widget class="QMenu" name="display">
+    <property name="title">
+     <string>显示</string>
+    </property>
     <addaction name="visualizeLUT"/>
     <addaction name="drawHistogram"/>
+    <addaction name="extractPalette"/>
    </widget>
    <addaction name="file"/>
    <addaction name="edit"/>
+   <addaction name="display"/>
   </widget>
   <action name="openImage">
    <property name="text">
@@ -420,6 +427,11 @@
   <action name="drawHistogram">
    <property name="text">
     <string>绘制直方图</string>
+   </property>
+  </action>
+  <action name="extractPalette">
+   <property name="text">
+    <string>解析配色</string>
    </property>
   </action>
  </widget>

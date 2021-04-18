@@ -1,21 +1,16 @@
 import numpy as np
 
-import PySide6
-from PySide6 import QtCore
 from PySide6.QtCore import Qt, QSize, QPointF
-from PySide6.QtWidgets import QApplication, QSizePolicy, QVBoxLayout, QLabel, QCheckBox, QHBoxLayout, QWidget, QListWidget, QListWidgetItem
+from PySide6.QtWidgets import QSizePolicy, QVBoxLayout, QLabel, QCheckBox, QHBoxLayout, QWidget
 from PySide6.QtGui import QImage, QPixmap, QIcon, QPainter, QColor, QPolygonF, QPainterPath, QBrush
 
 
 class Hist_Dialog(QWidget):
-    """
-    Form for histogram viewing
-    """
     def __init__(self, size=200):
         super().__init__()
-        self.mode = 'Luminosity'
-        self.chan_colors = [Qt.gray]
-        self.setWindowTitle('Histogram')
+        self.setWindowIcon(QIcon("icon.png"))
+
+        self.setWindowTitle('直方图')
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.setMinimumSize(size, 100)
 

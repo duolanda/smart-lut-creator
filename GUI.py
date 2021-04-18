@@ -7,6 +7,7 @@ from my_widget import myQGraphicsView
 from my_signal import mysgn
 from output_dialog import Output_Dialog
 from hist_dialog import Hist_Dialog, histogram
+from palette_dialog import Palette_Dialog
 
 import os
 from colour import read_image, write_image
@@ -59,6 +60,7 @@ class LutUI(QObject):
         self.ui.loadHALD.triggered.connect(self.load_HALD)
         self.ui.visualizeLUT.triggered.connect(self.vis_lut)
         self.ui.drawHistogram.triggered.connect(self.draw_histogram)
+        self.ui.extractPalette.triggered.connect(self.extract_palette)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -768,6 +770,15 @@ class LutUI(QObject):
         hist = histogram(self.preview)
         self.hist_dialog.change_hist(hist)
         self.hist_dialog.show()
+
+    def extract_palette(self):
+        '''
+        解析色卡
+        '''
+        self.palette_dialog = Palette_Dialog()
+        self.palette_dialog.set_img(self.preview)
+        self.palette_dialog.palette_extract(6) # 解析六个颜色
+        self.palette_dialog.show()
 
 
     def auto_wb(self):
