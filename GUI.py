@@ -9,7 +9,7 @@ from output_dialog import Output_Dialog
 from hist_dialog import Hist_Dialog, histogram
 
 import os
-import colour
+from colour import read_image, write_image
 import numpy as np
 import time
 from shutil import copy
@@ -210,7 +210,7 @@ class LutUI(QObject):
             self.reset_para() #打开一张新图之前先将各个参数都归位。当图像的修改方式为将 lut 应用后则不必进行该操作。
 
 
-        img_float = colour.read_image(file_name)
+        img_float = read_image(file_name)
         img = (img_float*255).astype(np.uint8)
         self.preview = img
         self.zoomscale=1  
@@ -649,7 +649,7 @@ class LutUI(QObject):
         if save_path[0] == '': 
             return
 
-        colour.write_image(self.preview, save_path[0])
+        write_image(self.preview, save_path[0])
 
     def resize_lut(self):
         value, ok = QInputDialog.getInt(self.ui, "修改尺寸", "请输入修改后的 LUT 大小:", self.lut.size, 2, 65)
@@ -727,7 +727,7 @@ class LutUI(QObject):
 
         hald_img = generate_HALD_np(64)
         hald_img = hald_img.reshape(512, 512, 3)
-        colour.write_image(hald_img, save_path[0])
+        write_image(hald_img, save_path[0])
         
 
     def load_HALD(self):
@@ -739,7 +739,7 @@ class LutUI(QObject):
             return
 
         file_path = openfile_name[0][0]
-        hald_img = colour.read_image(file_path)
+        hald_img = read_image(file_path)
         self.lut = compute_lut_np(hald_img, 64, 'HALD_in')
         self.show_img()
 

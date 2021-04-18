@@ -1,6 +1,5 @@
-import colour
+from colour import sRGB_to_XYZ, XYZ_to_sRGB, XYZ_to_Lab, XYZ_to_sRGB, RGB_to_HSV, HSV_to_RGB, RGB_to_YCbCr, YCbCr_to_RGB
 import numpy as np
-from skimage.color import rgb2xyz, xyz2rgb, rgb2lab, lab2rgb, rgb2hsv, rgb2ycbcr,rgb2yuv
 import math
 
 def vector_dot(m, v): 
@@ -166,24 +165,24 @@ def cs_convert(input_cs, out_cs, img, input_gamma = 1.0, output_gamma = 1.0, cli
     img = img**input_gamma
 
     if input_cs == 'srgb' and out_cs == 'xyz':
-        img_out = colour.sRGB_to_XYZ(img)
+        img_out = sRGB_to_XYZ(img)
     elif input_cs == 'xyz' and out_cs == 'srgb':
-        img_out = colour.XYZ_to_sRGB(img)
+        img_out = XYZ_to_sRGB(img)
 
     elif input_cs == 'srgb' and out_cs == 'lab':
-        img_out = colour.XYZ_to_Lab(colour.sRGB_to_XYZ(img))
+        img_out = XYZ_to_Lab(sRGB_to_XYZ(img))
     elif input_cs == 'lab' and out_cs == 'srgb':
-        img_out = colour.XYZ_to_sRGB(colour.Lab_to_XYZ(img))
+        img_out = XYZ_to_sRGB(Lab_to_XYZ(img))
 
     elif input_cs == 'srgb' and out_cs == 'hsv':
-        img_out = colour.RGB_to_HSV(img)
+        img_out = RGB_to_HSV(img)
     elif input_cs == 'hsv' and out_cs == 'srgb':
-        img_out = colour.HSV_to_RGB(img)
+        img_out = HSV_to_RGB(img)
 
     elif input_cs == 'srgb' and out_cs == 'ycbcr':
-        img_out = colour.RGB_to_YCbCr(img)
+        img_out = RGB_to_YCbCr(img)
     elif input_cs == 'ycbcr' and out_cs == 'srgb':
-        img_out = colour.YCbCr_to_RGB(img)
+        img_out = YCbCr_to_RGB(img)
 
     elif input_cs == out_cs:
         img_out = img

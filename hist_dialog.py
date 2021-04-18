@@ -1,4 +1,3 @@
-import colour
 import numpy as np
 
 import PySide6
