@@ -777,7 +777,7 @@ class LutUI(QObject):
         '''
         self.palette_dialog = Palette_Dialog()
         self.palette_dialog.set_img(self.preview)
-        self.palette_dialog.palette_extract(6) # 解析六个颜色
+        self.palette_dialog.palette_extract(8) # 解析八个颜色
         self.palette_dialog.show()
 
 

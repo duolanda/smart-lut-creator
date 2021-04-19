@@ -12,8 +12,6 @@ class Palette_Dialog(QWidget):
         self.setWindowTitle('色板')
         self.setWindowIcon(QIcon("icon.png"))
         self.height = 150
-        self.width = 900
-        self.resize(self.width, self.height)
 
         self.init_widgets()
 
@@ -32,6 +30,9 @@ class Palette_Dialog(QWidget):
     def palette_extract(self, color_number):
         img = Image.fromarray(self.img) # colorgram 需要传入 PIL 格式的图片或文件名
         colors = colorgram.extract(img, color_number)
+
+        self.width = color_number * self.height
+        self.resize(self.width, self.height)
 
         height = self.height
         width = self.width
