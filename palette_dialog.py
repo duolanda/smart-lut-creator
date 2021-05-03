@@ -1,8 +1,12 @@
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, QImage, QPixmap
 import colorgram
 import numpy as np
 from PIL import Image
+
+
+def rgb_to_hex(rgb):
+        return ('#%02x%02x%02x' %rgb)
 
 class Palette_Dialog(QWidget):
 
@@ -12,40 +16,42 @@ class Palette_Dialog(QWidget):
         self.setWindowTitle('色板')
         self.setWindowIcon(QIcon("icon.png"))
         self.height = 150
+        self.width = 900
+        self.resize(self.width, self.height)
 
-        self.init_widgets()
 
+    def gen_color_button(self, color_list):
 
-    def init_widgets(self):
-        self.label_pic = QLabel()
-        self.label_pic.setScaledContents(True)
+        hbox = QHBoxLayout()
 
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.label_pic)
+        self.button_list = []
+        for color in color_list:
+            color_inverse = [255-i for i in color] #标识色号的文字用反色，保证看清
+            color_hex = rgb_to_hex(tuple(color))
 
-        self.setLayout(vbox)
-        # self.adjustSize()
+            button = QPushButton()
+            button.setFixedSize(self.width/len(color_list), self.height)
+            button.setText(str(color)[1:-1] + '\n' + color_hex)
+            button.setStyleSheet('QPushButton{background:rgb(%s); border-radius:5px; color:rgb(%s)} QPushButton:hover{border-color:red;}' %(str(color)[1:-1], str(color_inverse)[1:-1]))
+
+            # button.clicked.connect(lambda :self.push(self.sender()))
+
+            hbox.addWidget(button)
+
+            self.button_list.append(button)
+
+        self.setLayout(hbox)     
+
+    def push(self,n):
+        print(n)
 
 
     def palette_extract(self, color_number):
         img = Image.fromarray(self.img) # colorgram 需要传入 PIL 格式的图片或文件名
-        colors = colorgram.extract(img, color_number)
+        colors_ex = colorgram.extract(img, color_number)
+        colors =[list(color.rgb) for color in colors_ex]
 
-        self.width = color_number * self.height
-        self.resize(self.width, self.height)
-
-        height = self.height
-        width = self.width
-        output = np.zeros((height, width, 3), dtype='uint8')
-
-        edge = 0
-        for color in colors:
-            output[0:height, edge:edge+int(width*color.proportion)] = np.asarray(color.rgb)
-            edge = edge+int(width*color.proportion)
-
-        img = QImage(output, output.shape[1], output.shape[0], output.shape[1]*3, QImage.Format_RGB888)
-        pix = QPixmap.fromImage(img)
-        self.label_pic.setPixmap(pix)
+        self.gen_color_button(colors)
 
 
     def set_img(self, img):
@@ -53,8 +59,13 @@ class Palette_Dialog(QWidget):
 
 
 
-# if __name__ == '__main__':
-#     app = QApplication()
-#     window = Palette_Dialog()
-#     window.show()
-#     app.exec_()
+if __name__ == '__main__':
+    app = QApplication()
+
+    window = Palette_Dialog()
+    img = np.array(Image.open('test_img/panel.jpg'))
+    window.set_img(img)
+    window.palette_extract(6)
+
+    window.show()
+    app.exec_()
