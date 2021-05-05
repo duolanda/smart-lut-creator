@@ -25,13 +25,13 @@ class Palette_Dialog(QWidget):
         hbox = QHBoxLayout()
 
         self.button_list = []
-        for color in color_list:
+        for color, proportion in color_list:
             color_inverse = [255-i for i in color] #标识色号的文字用反色，保证看清
             color_hex = rgb_to_hex(tuple(color))
 
             button = QPushButton()
             button.setFixedSize(self.width/len(color_list), self.height)
-            button.setText(str(color)[1:-1] + '\n' + color_hex)
+            button.setText(str(color)[1:-1] + '\n' + color_hex + '\n' + str(round(proportion*100, 2))+'%')
             button.setStyleSheet('QPushButton{background:rgb(%s); border-radius:5px; color:rgb(%s)} QPushButton:hover{border-color:red;}' %(str(color)[1:-1], str(color_inverse)[1:-1]))
 
             # button.clicked.connect(lambda :self.push(self.sender()))
@@ -49,7 +49,7 @@ class Palette_Dialog(QWidget):
     def palette_extract(self, color_number):
         img = Image.fromarray(self.img) # colorgram 需要传入 PIL 格式的图片或文件名
         colors_ex = colorgram.extract(img, color_number)
-        colors =[list(color.rgb) for color in colors_ex]
+        colors =[(color.rgb[:], color.proportion) for color in colors_ex]
 
         self.gen_color_button(colors)
 
