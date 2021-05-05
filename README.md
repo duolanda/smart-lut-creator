@@ -23,16 +23,22 @@
 - lut_color_enhance.py - 一级校色
 - lut_color_space.py - 色彩空间（含色域、Gamma、白点）转换
 - auto_wb.py - 自动白平衡
+- auto_cb.py - 自动色彩均衡
 - lut_preview.py - 将 LUT 应用到图像上
 
 ### GUI 相关
 
 - Smart LUT Creator.ui - Qt  Designer 生成的可动态加载的图形界面
 - icon.png - 程序图标（暂时）
+- hist_dialog.py - 直方图窗口
+- output_dialog.py - LUT 导出窗口
+- palette_dialog.py - 色卡解析窗口
 - my_widget.py - 实现可接受拖拽动作的 myQGraphicsView
 - my_signal.py - 帮助 my_widget 传递信号
 
+### 测试
 
+- module_test.py - 所有测试的入口
 
 
 
