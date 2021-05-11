@@ -1,3 +1,4 @@
+from typing import DefaultDict, Mapping
 import PySide6
 from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QInputDialog
 from PySide6.QtUiTools import QUiLoader
@@ -46,7 +47,7 @@ class LutUI(QObject):
         self.ui.installEventFilter(self)
         self.ui.graphicsView.viewport().installEventFilter(self)
         self.ui.setWindowIcon(QIcon("icon.png"))
-
+    
 
         self.ui.graphicsView.resize(654, 525) #resize事件一开始获得的大小不对，手动设一下
 
@@ -740,6 +741,8 @@ class LutUI(QObject):
 
         file_path = openfile_name[0][0]
         hald_img = read_image(file_path)
+        if hald_img.shape[2] > 3:
+            hald_img = hald_img[:,:,:3]
         self.lut = compute_lut_np(hald_img, 64, 'HALD_in')
         self.show_img()
 
@@ -779,6 +782,7 @@ class LutUI(QObject):
         self.palette_dialog.set_img(self.preview)
         self.palette_dialog.palette_extract(8) # 解析八个颜色
         self.palette_dialog.show()
+        
 
 
     def auto_wb(self):
@@ -814,3 +818,4 @@ qtmodern.styles.dark(app) #qtmodern，dark 改成 light 就是日间模式
 # mw.show()
 lut_ui.ui.show()
 app.exec_()
+
