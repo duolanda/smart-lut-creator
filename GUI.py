@@ -1,5 +1,3 @@
-from typing import DefaultDict, Mapping
-import PySide6
 from PySide6.QtWidgets import QApplication, QLabel, QWidget, QPushButton, QVBoxLayout, QMainWindow, QFileDialog, QGraphicsScene, QGraphicsPixmapItem, QMessageBox, QInputDialog
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QEvent, QObject

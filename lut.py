@@ -128,14 +128,27 @@ class LUT:
         name：LUT 名称，字符串
         lattice_np：numpy 矩阵表示的晶格点，形状为(n,n,n,3)
         '''
-        self.lattice = lattice
-        self.size = self.lattice.shape[0]
-        self.name = str(name)
-
+        self.lattice = self if lattice_np is not None else lattice
+        self._size=None
         if type(lattice_np) is np.ndarray:
             self.lattice_np = lattice_np
         else:
             self.lattice_np = self.lut_to_numpy(False)
+        
+        #self.size = 
+        self.name = str(name)
+    
+    @property
+    def size(self):
+        if self._size is None:
+            self._size= (getattr(self.lattice,"shape",None) or getattr(self.lattice_np,"shape"))[0]
+        return self._size
+            
+    
+    def __getitem__(self, value):
+        lattice = self.lattice_np[value]
+        return Color(lattice[2], lattice[1], lattice[0])
+        
     
 
     @staticmethod
@@ -148,12 +161,12 @@ class LUT:
             name = "HALD"+str(size)
         HALD_data_reshape = np.array(HALD_data).reshape(size, size, size, 3)
         HALDLattice = empty_lattice_of_size(size)
-        for b in range(size):
-            for g in range(size):
-                for r in range(size):
-                    HALD_lattice = HALD_data[b*size*size+g*size+r]
-                    HALDLattice[r, g, b] = Color(HALD_lattice[0], HALD_lattice[1], HALD_lattice[2])
-        return LUT(HALDLattice, name = name, lattice_np = HALD_data_reshape)    
+        # for b in range(size):
+        #     for g in range(size):
+        #         for r in range(size):
+        #             HALD_lattice = HALD_data[b*size*size+g*size+r]
+        #             HALDLattice[r, g, b] = Color(HALD_lattice[0], HALD_lattice[1], HALD_lattice[2])
+        return LUT(lattice = None, name = name, lattice_np = HALD_data_reshape)    
 
     
 
@@ -251,6 +264,7 @@ class LUT:
                 for z in range(size):
                     selfColor = self.lattice[x, y, z].clamped01()
                     newLattice[x, y, z] = other_lut.ColorFromColor(selfColor)
+        
         return LUT(newLattice, name = self.name + "+" + other_lut.name)
 
 
