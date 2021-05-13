@@ -31,11 +31,9 @@ def rgb_color_enhance(source,
         exposure = 2**exposure
 
     if contrast:
-        if not -1.0 <= contrast <= 5.0 :
-            raise ValueError("Contrast should be from -1.0 to 5.0")
-        if contrast == -1:
-            contrast = -0.99 #-1+1=0，不能进入contrast逻辑，手动修正一下
-        contrast = contrast + 1
+        if not -10 <= contrast <= 10 :
+            raise ValueError("Contrast should be from -10.0 to 10.0")
+      
 
     if warmth:
         if warmth < 0:
@@ -58,15 +56,20 @@ def rgb_color_enhance(source,
         tint = 2.2*tint
 
     output = source.copy() #直接改 source 的话会把 img_in 也改掉
+
+    if contrast:
+        contrast = contrast / 10
+        mean = numpy.mean(output)
+        if contrast > 0:
+            choicelist = [output + (1-mean) * contrast, 
+                    output - mean * contrast]
+            output = numpy.select([output >= mean, True], choicelist)
+        if contrast < 0:
+            output = output + (output - mean) * contrast
+
     r = output[:,:,0]
     g = output[:,:,1]
     b = output[:,:,2]
-
-    if contrast:
-        r = (r - 0.5) * contrast + 0.5
-        g = (g - 0.5) * contrast + 0.5
-        b = (b - 0.5) * contrast + 0.5
-
 
     if saturation:
         avg_v = r * 0.2126 + g * 0.7152 + b * 0.0722

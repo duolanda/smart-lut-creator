@@ -179,6 +179,7 @@ class LUT:
         color = color.clamped01()
         size = self.size
         return self.ColorAtInterpolatedLatticePoint(color.r * (size-1), color.g * (size-1), color.b * (size-1))
+        # 索引是 0~size-1，大小是 size
 
     def ColorAtLatticePoint(self, redPoint, greenPoint, bluePoint):
         """

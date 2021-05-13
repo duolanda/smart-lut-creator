@@ -160,8 +160,8 @@ class LutUI(QObject):
         brightnessSlider.setMinimum(-100)	
         brightnessSlider.setMaximum(100)	
 
-        contrastSlider.setMinimum(-100)	
-        contrastSlider.setMaximum(500)	
+        contrastSlider.setMinimum(-1000)	
+        contrastSlider.setMaximum(1000)	
 
         exposureSlider.setMinimum(-500)	
         exposureSlider.setMaximum(500)	
