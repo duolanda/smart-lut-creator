@@ -22,7 +22,7 @@ def generate_HALD_np(lut_size):
     for i in range(len(image[0])):
         image[0][i] = np.array(colors[i])
 
-    hald_img = np.float64(image/255)
+    hald_img = image
     return hald_img
 
 

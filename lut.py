@@ -33,7 +33,9 @@ class LutM: #来自于 lut_maker 的 lut 类，未来可能与来自 pylut 的 l
         """
         Generate and return the appropriate RGB colors for each node in a uniform lattice.
         """
-        steps = np.linspace(0, 255, self.size, dtype=np.uint8)
+        # steps = np.linspace(0, 255, self.size, dtype=np.uint8)
+        steps = np.linspace(0, 1, self.size)
+
         colors = np.array(
                 [[[(r,g,b) for r in steps] for g in steps] for b in steps]
                 ).reshape((self.swatch_count,3)).tolist()
