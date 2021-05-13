@@ -190,7 +190,7 @@ class LutUI(QObject):
         '''
         打开图像选择窗口
         '''
-        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择图像文件', '.', "Image Files(*.jpg *.jpeg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
         if openfile_name[0] == []: #如果用户什么也没选就什么也不做，不然下一步会报错
             return
 
@@ -644,7 +644,7 @@ class LutUI(QObject):
 
 
     def export_img(self):
-        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.png', 'png(*.png);;jpg(*.jpg);;tif(*.tif *.tiff);;bmp(*.bmp)')
+        save_path = QFileDialog.getSaveFileName(self.ui, '导出当前预览', './'+self.img_name+'_已转换.png', 'png(*.png);;jpg(*.jpg *.jpeg);;tif(*.tif *.tiff);;bmp(*.bmp)')
         if save_path[0] == '': 
             return
 
@@ -733,7 +733,7 @@ class LutUI(QObject):
         '''
         将 HALD 转为当前的 LUT
         '''
-        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 HALD 图像文件', '.', "Image Files(*.jpg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
+        openfile_name = QFileDialog.getOpenFileNames(self.ui, '选择 HALD 图像文件', '.', "Image Files(*.jpg *.jpeg *.png *.tif *.tiff *.bmp)") #.代表是当前目录
         if openfile_name[0] == []: #如果用户什么也没选就什么也不做，不然下一步会报错
             return
 
