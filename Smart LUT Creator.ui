@@ -381,6 +381,7 @@
     <addaction name="setDavinciLut"/>
     <addaction name="exportHALD"/>
     <addaction name="loadHALD"/>
+    <addaction name="colorMatch"/>
    </widget>
    <widget class="QMenu" name="display">
     <property name="title">
@@ -432,6 +433,11 @@
   <action name="extractPalette">
    <property name="text">
     <string>解析配色</string>
+   </property>
+  </action>
+  <action name="colorMatch">
+   <property name="text">
+    <string>色彩匹配</string>
    </property>
   </action>
  </widget>

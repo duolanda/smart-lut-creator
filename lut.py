@@ -310,6 +310,10 @@ class LUT:
             for g in range(0, size, step):
                 for r in range(0, size, step):
                     pcd.points.append( np.asarray([b,g,r],dtype=np.float64)*norm )
-                    pcd.colors.append( lut[b, g, r].T )
-
-        o3d.visualization.draw_geometries([pcd])
+                    pcd.colors.append( lut[r, g, b].T ) #其实应该是bgr
+                    
+        mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=[0, 0, 0]) #画轴
+        # mesh_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1, origin=[0, 0, 1]) #通过旋转解决问题
+        # R=mesh_frame.get_rotation_matrix_from_axis_angle(np.asarray([0,np.pi/2,0]))
+        # mesh_frame.rotate(R)
+        o3d.visualization.draw_geometries([pcd, mesh_frame])

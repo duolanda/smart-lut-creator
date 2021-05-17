@@ -7,6 +7,7 @@ from my_signal import mysgn
 from output_dialog import Output_Dialog
 from hist_dialog import Hist_Dialog, histogram
 from palette_dialog import Palette_Dialog
+from color_match_dialog import ColorMatch_Dialog
 
 import os
 from colour import read_image, write_image
@@ -60,6 +61,7 @@ class LutUI(QObject):
         self.ui.visualizeLUT.triggered.connect(self.vis_lut)
         self.ui.drawHistogram.triggered.connect(self.draw_histogram)
         self.ui.extractPalette.triggered.connect(self.extract_palette)
+        self.ui.colorMatch.triggered.connect(self.color_match)
 
         self.ui.compareButton.clicked.connect(self.compare_switch)
         self.ui.zoomInButton.clicked.connect(self.zoomin)
@@ -422,6 +424,7 @@ class LutUI(QObject):
         enhence_list[6] = value
         self.color_enhence()
 
+
     def color_enhence(self):
         '''
         完成一级校色
@@ -438,7 +441,6 @@ class LutUI(QObject):
         self.show_img()
 
         self.hald3 = hald_out
-
 
 
     def convert_cs(self):
@@ -483,7 +485,7 @@ class LutUI(QObject):
         img_out = np.uint8(img_float*255)
         self.preview = img_out
 
-        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], QImage.Format_RGB888)
+        frame = QImage(img_out, img_out.shape[1], img_out.shape[0], img_out.shape[1]*3, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix) 
 
@@ -746,7 +748,7 @@ class LutUI(QObject):
 
     def vis_lut(self):
         '''
-        用 plt 绘制散点图，耗时较久
+        用 open3d 绘制散点图
         '''
         step = round(self.lut.size/10)
         self.lut.visualize(1)
@@ -781,6 +783,21 @@ class LutUI(QObject):
         self.palette_dialog.palette_extract(8) # 解析八个颜色
         self.palette_dialog.show()
         
+    def color_match(self):
+        '''
+        色彩匹配
+        '''
+        self.cm_dialog = ColorMatch_Dialog()
+        self.cm_dialog.set_hald(self.hald_img)
+        self.cm_dialog.show()
+        self.cm_dialog.out_hald_signel.connect(self.color_match_get)
+        
+    def color_match_get(self, hald_out):
+        self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
+        self.show_img()
+        dia_img = self.cm_dialog.get_img()
+        dia_pvw = apply_lut_np(self.lut, dia_img)
+        self.cm_dialog.show_preview(dia_pvw)
 
 
     def auto_wb(self):
@@ -805,6 +822,8 @@ class LutUI(QObject):
 
         self.hald1 = hald_out
         self.hald2 = hald_out
+    
+    
         
 
 
