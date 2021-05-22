@@ -1,6 +1,8 @@
-from sys import int_info
 import colour
 import numpy as np
+from PIL import Image, ImageDraw
+import cv2
+import os
 
 from lut import LUT
 from lut import LutM
@@ -48,7 +50,8 @@ def test_hald_np(lut_size):
     for i in range(len(image[0])):
         image[0][i] = np.array(colors[i])
 
-    hald_img = np.float64(image/255)
+    # hald_img = np.float64(image/255)
+    hald_img = image
     colour.write_image(hald_img, 'test_hald.png')
     return hald_img
 
@@ -214,6 +217,8 @@ def test_io():
 
 
 if __name__ == '__main__':
-    test_io()
+    # test_io()
+    a  = test_hald_np(3)
+    print(a)
     
     

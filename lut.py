@@ -148,8 +148,8 @@ class LUT:
             
     
     def __getitem__(self, value):
-        lattice = self.lattice_np[value]
-        return Color(lattice[2], lattice[1], lattice[0])
+        lattice = self.lattice_np[(value[2], value[1], value[0])]
+        return Color(lattice[0], lattice[1], lattice[2])
         
     
 

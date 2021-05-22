@@ -214,8 +214,11 @@ def apply_lut(lut, img, method):
 
 
 
-img = read_image('test_img/s-log.tif')
-lut = FromCubeFile('test_lut/From_SLog2SGumut_To_LC-709_.cube')
+# img = read_image('test_img/s-log.tif')
+# lut = FromCubeFile('test_lut/From_SLog2SGumut_To_LC-709_.cube')
+img = read_image('test_img/Alexa.bmp')
+lut = FromCubeFile('test_lut/ARRI_LogC2Video_Classic709_davinci3d_33.cube')
+
 # output = tetrahedral_interpolation(lut, 1.2, 1.5, 1.7)
 # print(output)
 # output2 = trilinear_interpolation(lut, 1.2, 1.5, 1.7)
@@ -224,5 +227,5 @@ lut = FromCubeFile('test_lut/From_SLog2SGumut_To_LC-709_.cube')
 # print(output3)
 
 old = time.perf_counter()
-apply_lut(lut, img, 'tet')
+apply_lut(lut, img, 'near')
 print(time.perf_counter()-old)

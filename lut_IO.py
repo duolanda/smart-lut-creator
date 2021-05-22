@@ -47,6 +47,7 @@ def FromIdentity(size):
                 identityLattice[r, g, b] = Color(indices01[r], indices01[g], indices01[b])
     return LUT(identityLattice, name = "Identity"+str(size))	   
 
+
 def FromLustre3DLFile(lut_path):
     with open(lut_path, 'rt') as f:
         lut_lines = f.readlines()
