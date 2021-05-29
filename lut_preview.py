@@ -1,6 +1,4 @@
-from PIL import Image, ImageFilter, ImageMath
-
-from itertools import chain
+from PIL import Image, ImageFilter
 
 import numpy as np
 

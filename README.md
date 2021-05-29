@@ -50,3 +50,18 @@
 - [pillow-lut-tools: Lookup tables loading, manipulating, and generating for Pillow library](https://github.com/homm/pillow-lut-tools)
 - [mahmoudnafifi/WB_sRGB: White balance camera-rendered sRGB images (CVPR 2019)](https://github.com/mahmoudnafifi/WB_sRGB)
 - [Simple color balance algorithm using Python 2.7.8 and OpenCV 2.4.10](https://gist.github.com/DavidYKay/9dad6c4ab0d8d7dbf3dc)
+- [tzing/tps-deformation: python implementation of thin plate spline function](https://github.com/tzing/tps-deformation)
+
+## 测试环境
+
+- Python 3.6.2
+- colorgram.py==1.2.0
+- colour-science==0.3.16
+- face-recognition==1.3.0
+- numpy==1.16.0
+- open3d==0.12.0
+- opencv-python==3.4.2.16
+- Pillow==6.2.2
+- pymiere==1.2.1
+- PySide6==6.0.0
+- qtmodern==0.2.0

@@ -17,7 +17,6 @@ from shutil import copy
 import pymiere
 from pymiere import wrappers
 import DaVinciResolveScript as bmd
-import matplotlib.pyplot as plt
 import qtmodern.styles
 import qtmodern.windows
 from lut import LUT
@@ -26,7 +25,7 @@ from lut_color_space import gamma_convert, gamut_convert
 from generate_HALD import generate_HALD_np
 from lut_compute import compute_lut_np
 from lut_preview import apply_lut_np
-from auto_wb import auto_wb_correct, auto_wb_correct_qcgp, auto_wb_srgb
+from auto_wb import auto_wb_srgb
 from auto_cb import simplest_cb
 import lut_IO
 
@@ -758,15 +757,6 @@ class LutUI(QObject):
         绘制当前预览画面的直方图
         '''
         global img_float
-        # r,g,b = self.preview[:,:,0], self.preview[:,:,1], self.preview[:,:,2]
-        # plt.figure("直方图")
-        # ar=np.array(r).flatten()
-        # plt.hist(ar, bins=256, normed=1, color='r', hold=1,)
-        # ag=np.array(g).flatten()
-        # plt.hist(ag, bins=256, normed=1, color='g', alpha=0.5, hold=1)
-        # ab=np.array(b).flatten()
-        # plt.hist(ab, bins=256, normed=1, color='b', alpha=0.5)
-        # plt.show()
 
         self.hist_dialog = Hist_Dialog()
         self.hist_dialog.set_img(np.uint8(img_float*255), self.preview) # 图片都是 0~255
@@ -802,8 +792,6 @@ class LutUI(QObject):
 
     def auto_wb(self):
         global img_float
-        # hald_out = auto_wb_correct(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
-        # hald_out = auto_wb_correct_qcgp(img_float, self.hald_img) 
         hald_out = auto_wb_srgb(img_float, self.hald_img, self.ui.faceCheckBox.isChecked()) 
         self.lut = compute_lut_np(hald_out, self.lut.size, self.lut.name)
         self.show_img()
